@@ -4,6 +4,7 @@ It might be helpful to add proxy to git even if you have system proxy.
 
 # Functions
 - sweep frequency support (containing fmu-6c)
+- gz_tailsitter simulation
 - ros2/dynamic allocation support
 
 # Usage

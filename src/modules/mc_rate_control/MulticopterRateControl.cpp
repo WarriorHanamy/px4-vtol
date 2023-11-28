@@ -80,7 +80,7 @@ MulticopterRateControl::parameters_updated()
 	// to the ideal (K * [1 + 1/sTi + sTd]) form
 	const Vector3f rate_k = Vector3f(_param_mc_rollrate_k.get(), _param_mc_pitchrate_k.get(), _param_mc_yawrate_k.get());
 
-	_rate_control.setGains(
+	_rate_control.setPidGains(
 		rate_k.emult(Vector3f(_param_mc_rollrate_p.get(), _param_mc_pitchrate_p.get(), _param_mc_yawrate_p.get())),
 		rate_k.emult(Vector3f(_param_mc_rollrate_i.get(), _param_mc_pitchrate_i.get(), _param_mc_yawrate_i.get())),
 		rate_k.emult(Vector3f(_param_mc_rollrate_d.get(), _param_mc_pitchrate_d.get(), _param_mc_yawrate_d.get())));
@@ -95,6 +95,17 @@ MulticopterRateControl::parameters_updated()
 	// manual rate control acro mode rate limits
 	_acro_rate_max = Vector3f(radians(_param_mc_acro_r_max.get()), radians(_param_mc_acro_p_max.get()),
 				  radians(_param_mc_acro_y_max.get()));
+}
+
+void MulticopterRateControl::chirpSignalGenerator(const hrt_abstime &time_start)
+{
+	float t = (hrt_absolute_time() - time_start) * 1e-6f;
+	if (t < _param_chirp_T.get()) {
+		float c = (_param_chirp_f1.get() - _param_chirp_f0.get()) / _param_chirp_T.get();
+		_chirp_signal = _param_chirp_A.get() * sinf(2*M_PI_F*(0.5f*c*t*t + _param_chirp_f0.get()*t));
+	} else {
+		_chirp_signal = 0.f;
+	}
 }
 
 void
@@ -120,6 +131,9 @@ MulticopterRateControl::Run()
 
 	/* run controller on gyro changes */
 	vehicle_angular_velocity_s angular_velocity;
+	vel_pitch_notification_s vel_pitch_nf;
+	if(_vel_pitch_notification_sub.update(&vel_pitch_nf))
+		mavlink_log_critical(&(_mavlink_log_pub), "stable vel:%f , pitch:%f", (double)vel_pitch_nf.v_norm, (double)vel_pitch_nf.pitch);
 
 	if (_vehicle_angular_velocity_sub.update(&angular_velocity)) {
 
@@ -149,8 +163,15 @@ MulticopterRateControl::Run()
 		// use rates setpoint topic
 		vehicle_rates_setpoint_s vehicle_rates_setpoint{};
 
+		// manual_control_setpoint_s ms;
+		// if(_manual_control_setpoint_sub.updated()){
+		// 	_manual_control_setpoint_sub.update(&ms);
+		// 	mavlink_log_critical(&_mavlink_log_pub, "timestamp manual control: %d", (int)ms.timestamp);
+		// }
+		// manual_mode not attitude
 		if (_vehicle_control_mode.flag_control_manual_enabled && !_vehicle_control_mode.flag_control_attitude_enabled) {
 			// generate the rate setpoint from sticks
+			// PX4_WARN("entering maunal mode");
 			manual_control_setpoint_s manual_control_setpoint;
 
 			if (_manual_control_setpoint_sub.update(&manual_control_setpoint)) {
@@ -175,15 +196,21 @@ MulticopterRateControl::Run()
 			}
 
 		} else if (_vehicle_rates_setpoint_sub.update(&vehicle_rates_setpoint)) {
+			// PX4_INFO("here I receive my target");
 			if (_vehicle_rates_setpoint_sub.copy(&vehicle_rates_setpoint)) {
 				_rates_setpoint(0) = PX4_ISFINITE(vehicle_rates_setpoint.roll)  ? vehicle_rates_setpoint.roll  : rates(0);
 				_rates_setpoint(1) = PX4_ISFINITE(vehicle_rates_setpoint.pitch) ? vehicle_rates_setpoint.pitch : rates(1);
 				_rates_setpoint(2) = PX4_ISFINITE(vehicle_rates_setpoint.yaw)   ? vehicle_rates_setpoint.yaw   : rates(2);
 				_thrust_setpoint = Vector3f(vehicle_rates_setpoint.thrust_body);
+		// PX4_INFO("inner thrust:%f %f %f",(double)_thrust_setpoint(0),(double)_thrust_setpoint(1), (double)_thrust_setpoint(2));
+
 			}
 		}
-
-		// run the rate controller
+		// PX4_INFO("thrust:%f %f %f",(double)_thrust_setpoint(0),(double)_thrust_setpoint(1), (double)_thrust_setpoint(2));
+		// PX4_INFO("_rates_setpoint:%f %f %f",(double)_rates_setpoint(0),(double)_rates_setpoint(1),(double)_rates_setpoint(2));
+		// PX4_INFO("_rates_setpoint:%f",(double)_rates_setpoint(1));
+		// PX4_INFO("_rates_setpoint:%f",(double)_rates_setpoint(2));
+		// run the rate controlle1
 		if (_vehicle_control_mode.flag_control_rates_enabled) {
 
 			// reset integral if disarmed
@@ -197,6 +224,7 @@ MulticopterRateControl::Run()
 			if (_control_allocator_status_sub.update(&control_allocator_status)) {
 				Vector<bool, 3> saturation_positive;
 				Vector<bool, 3> saturation_negative;
+
 
 				if (!control_allocator_status.torque_setpoint_achieved) {
 					for (size_t i = 0; i < 3; i++) {
@@ -214,8 +242,70 @@ MulticopterRateControl::Run()
 			}
 
 			// run rate controller
-			const Vector3f att_control = _rate_control.update(rates, _rates_setpoint, angular_accel, dt, _maybe_landed || _landed);
+			// const Vector3f att_control = _rate_control.update(rates, _rates_setpoint, angular_accel, dt, _maybe_landed || _landed);
+			// run rate controller
+			Vector3f att_control = _rate_control.update(rates, _rates_setpoint, angular_accel, dt, _maybe_landed || _landed);
+			// Update rate controller 2 nd to keep control signal
+			Vector3f att_control_kept = att_control;
 
+			// lyu: add chirp signal and publish if enable the pre-set channel
+			if (_param_chirp_en.get() > 0) {
+				manual_control_setpoint_s manual_ctrl_sp;
+				_manual_control_setpoint_sub.copy(&manual_ctrl_sp);
+				static hrt_abstime chirp_time_start = hrt_absolute_time();
+
+				chirp_sweep_s chirp_sweep{};
+
+				// use remote aux1 to start the chirp signal
+				if (manual_ctrl_sp.aux1 > 0.5f) {
+				// if (1) {
+					// lyu: generate chirp signal
+					chirpSignalGenerator(chirp_time_start);
+					chirp_sweep.chirp = _chirp_signal;
+					chirp_sweep.timestamp = hrt_absolute_time();
+					chirp_sweep.timestamp_sample = angular_velocity.timestamp_sample;
+
+					// pre-set diff channel
+					if (_param_chirp_en.get() & ChirpChannel::ROLL) {
+
+						// lyu: open roll chirp sweep channel: 0001
+						att_control(0) = att_control(0) + _chirp_signal;
+						chirp_sweep.r = _rates_setpoint(0);
+						chirp_sweep.u = att_control(0);
+						chirp_sweep.y_raw = angular_velocity.xyz_r[0];
+						chirp_sweep.y_f = rates(0);
+
+					} else if (_param_chirp_en.get() & ChirpChannel::PITCH) {
+
+						// lyu: open pitch chirp sweep channel: 0010
+						att_control(1) = att_control(1) + _chirp_signal;
+						chirp_sweep.r = _rates_setpoint(1);
+						chirp_sweep.u = att_control(1);
+						chirp_sweep.y_raw = angular_velocity.xyz_r[1];
+						chirp_sweep.y_f = rates(1);
+
+					} else if (_param_chirp_en.get() & ChirpChannel::YAW) {
+
+						// lyu: open yaw chirp sweep channel: 0100
+						att_control(2) = att_control(2)  + _chirp_signal;
+						chirp_sweep.r = _rates_setpoint(2);
+						chirp_sweep.u = att_control(2);
+						chirp_sweep.y_raw = angular_velocity.xyz_r[2];
+						chirp_sweep.y_f = rates(2);
+					} else if (_param_chirp_en.get() & ChirpChannel::THRUST) {
+						// TODO: maybe delete and put it in the vertical ctrl
+						// do nothing temp
+
+					}
+
+					_chirp_sweep_pub.publish(chirp_sweep);
+
+				} else {
+					// update chirp start time
+					chirp_time_start = hrt_absolute_time();
+				}
+
+			}
 			// publish rate controller status
 			rate_ctrl_status_s rate_ctrl_status{};
 			_rate_control.getRateControlStatus(rate_ctrl_status);
@@ -259,6 +349,27 @@ MulticopterRateControl::Run()
 
 			updateActuatorControlsStatus(vehicle_torque_setpoint, dt);
 
+			// publish mc rate ctrl debug
+			if (1) {
+				Vector3f rates_P, rates_I, rates_D, rates_FF;
+				mc_rate_ctrl_debug_s ctrl_debug{};
+				esc_status_s esc_status{};
+				if (_esc_status_sub.updated())
+				{
+					_esc_status_sub.copy(&esc_status);
+					for (size_t esc = 0; esc < 8; esc++)
+					{	const esc_report_s &esc_report = esc_status.esc[esc];
+						ctrl_debug.rpm_feedback[esc] = esc_report.esc_rpm;
+					}
+				}
+				_rate_control.GetCtrlTerm(rates_P, rates_I, rates_D, rates_FF);
+				ctrl_debug.timestamp = hrt_absolute_time();
+				rates_P.copyTo(ctrl_debug.p_term);
+				rates_I.copyTo(ctrl_debug.i_term);
+				rates_D.copyTo(ctrl_debug.d_term);
+				att_control_kept.copyTo(ctrl_debug.ff_term);
+				_mc_rate_ctrl_debug_pub.publish(ctrl_debug);
+			}
 		}
 	}
 

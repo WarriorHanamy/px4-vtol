@@ -159,6 +159,11 @@ bool VehicleAngularVelocity::UpdateSampleRate()
 	return PX4_ISFINITE(_filter_sample_rate_hz) && (_filter_sample_rate_hz > 0);
 }
 
+float VehicleAngularVelocity::GetSampleRate()
+{
+	return _filter_sample_rate_hz;
+}
+
 void VehicleAngularVelocity::ResetFilters(const hrt_abstime &time_now_us)
 {
 	if ((_filter_sample_rate_hz > 0) && PX4_ISFINITE(_filter_sample_rate_hz)) {
@@ -167,29 +172,90 @@ void VehicleAngularVelocity::ResetFilters(const hrt_abstime &time_now_us)
 		const Vector3f angular_acceleration_uncalibrated{GetResetAngularAcceleration()};
 
 		for (int axis = 0; axis < 3; axis++) {
-			// angular velocity low pass
-			_lp_filter_velocity[axis].set_cutoff_frequency(_filter_sample_rate_hz, _param_imu_gyro_cutoff.get());
-			_lp_filter_velocity[axis].reset(angular_velocity_uncalibrated(axis));
+			if (axis != 2) {
+				// lyu: x and y axis
+				// angular velocity low pass
+				_lp_filter_velocity[axis].set_cutoff_frequency(_filter_sample_rate_hz, _param_imu_gyro_cutoff.get());
+				_lp_filter_velocity[axis].reset(angular_velocity_uncalibrated(axis));
 
-			// angular velocity notch 0
-			_notch_filter0_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyro_nf0_frq.get(),
-					_param_imu_gyro_nf0_bw.get());
-			_notch_filter0_velocity[axis].reset();
+				// angular velocity notch 0
+				_notch_filter0_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyro_nf0_frq.get(),
+						_param_imu_gyro_nf0_bw.get());
+				_notch_filter0_velocity[axis].reset();
 
-			// angular velocity notch 1
-			_notch_filter1_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyro_nf1_frq.get(),
-					_param_imu_gyro_nf1_bw.get());
-			_notch_filter1_velocity[axis].reset();
+				// angular velocity notch 1
+				_notch_filter1_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyro_nf1_frq.get(),
+						_param_imu_gyro_nf1_bw.get());
+				_notch_filter1_velocity[axis].reset();
 
-			// angular acceleration low pass
-			if ((_param_imu_dgyro_cutoff.get() > 0.f)
-			    && (_lp_filter_acceleration[axis].setCutoffFreq(_filter_sample_rate_hz, _param_imu_dgyro_cutoff.get()))) {
-				_lp_filter_acceleration[axis].reset(angular_acceleration_uncalibrated(axis));
+				// ang acc notch xy
+				_notch_filter_acc[axis].setParameters(_filter_sample_rate_hz, _param_imu_dgyro_nf_frq.get(),
+						_param_imu_dgyro_nf_bw.get());
+				_notch_filter_acc[axis].reset();
 
+				// angular acceleration low pass
+				if ((_param_imu_dgyro_cutoff.get() > 0.f)
+				    && (_lp_filter_acceleration[axis].setCutoffFreq(_filter_sample_rate_hz, _param_imu_dgyro_cutoff.get()))) {
+					_lp_filter_acceleration[axis].reset(angular_acceleration_uncalibrated(axis));
+
+				} else {
+					// disable filtering
+					_lp_filter_acceleration[axis].setAlpha(1.f);
+				}
 			} else {
-				// disable filtering
-				_lp_filter_acceleration[axis].setAlpha(1.f);
+				// lyu: z axis
+				// angular velocity low pass
+				_lp_filter_velocity[axis].set_cutoff_frequency(_filter_sample_rate_hz, _param_imu_gyroz_cutoff.get());
+				_lp_filter_velocity[axis].reset(angular_velocity_uncalibrated(axis));
+
+				// angular velocity notch 0
+				_notch_filter0_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyroz_nf0_frq.get(),
+						_param_imu_gyro_nf0_bw.get());
+				_notch_filter0_velocity[axis].reset();
+
+				// angular velocity notch 1
+				_notch_filter1_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyroz_nf1_frq.get(),
+						_param_imu_gyro_nf1_bw.get());
+				_notch_filter1_velocity[axis].reset();
+
+				// ang acc notch z
+				_notch_filter_acc[axis].setParameters(_filter_sample_rate_hz, _param_imu_dgyroz_nf_frq.get(),
+						_param_imu_dgyroz_nf_bw.get());
+				_notch_filter_acc[axis].reset();
+
+				// angular acceleration low pass
+				if ((_param_imu_dgyro_cutoff.get() > 0.f)
+				    && (_lp_filter_acceleration[axis].setCutoffFreq(_filter_sample_rate_hz, _param_imu_dgyroz_cutoff.get()))) {
+					_lp_filter_acceleration[axis].reset(angular_acceleration_uncalibrated(axis));
+
+				} else {
+					// disable filtering
+					_lp_filter_acceleration[axis].setAlpha(1.f);
+				}
 			}
+			// // angular velocity low pass
+			// _lp_filter_velocity[axis].set_cutoff_frequency(_filter_sample_rate_hz, _param_imu_gyro_cutoff.get());
+			// _lp_filter_velocity[axis].reset(angular_velocity_uncalibrated(axis));
+
+			// // angular velocity notch 0
+			// _notch_filter0_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyro_nf0_frq.get(),
+			// 		_param_imu_gyro_nf0_bw.get());
+			// _notch_filter0_velocity[axis].reset();
+
+			// // angular velocity notch 1
+			// _notch_filter1_velocity[axis].setParameters(_filter_sample_rate_hz, _param_imu_gyro_nf1_frq.get(),
+			// 		_param_imu_gyro_nf1_bw.get());
+			// _notch_filter1_velocity[axis].reset();
+
+			// // angular acceleration low pass
+			// if ((_param_imu_dgyro_cutoff.get() > 0.f)
+			//     && (_lp_filter_acceleration[axis].setCutoffFreq(_filter_sample_rate_hz, _param_imu_dgyro_cutoff.get()))) {
+			// 	_lp_filter_acceleration[axis].reset(angular_acceleration_uncalibrated(axis));
+
+			// } else {
+			// 	// disable filtering
+			// 	_lp_filter_acceleration[axis].setAlpha(1.f);
+			// }
 		}
 
 		// force reset notch filters on any scale change
@@ -371,14 +437,99 @@ void VehicleAngularVelocity::ParametersUpdate(bool force)
 
 		const bool nf0_enabled_prev = (_param_imu_gyro_nf0_frq.get() > 0.f) && (_param_imu_gyro_nf0_bw.get() > 0.f);
 		const bool nf1_enabled_prev = (_param_imu_gyro_nf1_frq.get() > 0.f) && (_param_imu_gyro_nf1_bw.get() > 0.f);
+		const bool nf0z_enabled_prev = (_param_imu_gyroz_nf0_frq.get() > 0.f) && (_param_imu_gyroz_nf0_bw.get() > 0.f);
+		const bool nf1z_enabled_prev = (_param_imu_gyroz_nf1_frq.get() > 0.f) && (_param_imu_gyroz_nf1_bw.get() > 0.f);
 
+		const bool d_nf_enabled_prev = (_param_imu_dgyro_nf_frq.get() > 0.f) && (_param_imu_dgyro_nf_bw.get() > 0.f);
+		const bool d_nfz_enabled_prev = (_param_imu_dgyroz_nf_frq.get() > 0.f) && (_param_imu_dgyroz_nf_bw.get() > 0.f);
 		updateParams();
 
 		const bool nf0_enabled = (_param_imu_gyro_nf0_frq.get() > 0.f) && (_param_imu_gyro_nf0_bw.get() > 0.f);
 		const bool nf1_enabled = (_param_imu_gyro_nf1_frq.get() > 0.f) && (_param_imu_gyro_nf1_bw.get() > 0.f);
+		const bool nf0z_enabled = (_param_imu_gyroz_nf0_frq.get() > 0.f) && (_param_imu_gyroz_nf0_bw.get() > 0.f);
+		const bool nf1z_enabled = (_param_imu_gyroz_nf1_frq.get() > 0.f) && (_param_imu_gyroz_nf1_bw.get() > 0.f);
 
+		const bool d_nf_enabled = (_param_imu_dgyro_nf_frq.get() > 0.f) && (_param_imu_dgyro_nf_bw.get() > 0.f);
+		const bool d_nfz_enabled = (_param_imu_dgyroz_nf_frq.get() > 0.f) && (_param_imu_dgyroz_nf_bw.get() > 0.f);
 		_calibration.ParametersUpdate();
 
+		for (int axis = 0; axis < 3; axis++) {
+			if (axis != 2) {
+				// gyro low pass cutoff frequency changed
+				if (fabsf(_lp_filter_velocity[axis].get_cutoff_freq() - _param_imu_gyro_cutoff.get()) > 0.01f) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyro notch filter 0 frequency or bandwidth changed
+				const bool nf0_freq_changed = (fabsf(_notch_filter0_velocity[axis].getNotchFreq() - _param_imu_gyro_nf0_frq.get()) > 0.01f);
+				const bool nf0_bw_changed   = (fabsf(_notch_filter0_velocity[axis].getBandwidth() - _param_imu_gyro_nf0_bw.get()) > 0.01f);
+
+				if ((nf0_enabled_prev != nf0_enabled) || (nf0_enabled && (nf0_freq_changed || nf0_bw_changed))) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyro notch filter 1 frequency or bandwidth changed
+				const bool nf1_freq_changed = (fabsf(_notch_filter1_velocity[axis].getNotchFreq() - _param_imu_gyro_nf1_frq.get()) > 0.01f);
+				const bool nf1_bw_changed   = (fabsf(_notch_filter1_velocity[axis].getBandwidth() - _param_imu_gyro_nf1_bw.get()) > 0.01f);
+				if ((nf1_enabled_prev != nf1_enabled) || (nf1_enabled && (nf1_freq_changed || nf1_bw_changed))) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyroz derivative notch filter frequency or bandwidth changed
+				const bool d_nf_freq_changed = (fabsf(_notch_filter_acc[axis].getNotchFreq() - _param_imu_dgyro_nf_frq.get()) > 0.01f);
+				const bool d_nf_bw_changed   = (fabsf(_notch_filter_acc[axis].getBandwidth() - _param_imu_dgyro_nf_bw.get()) > 0.01f);
+				if ((d_nf_enabled_prev != d_nf_enabled) || (d_nf_enabled && (d_nf_freq_changed || d_nf_bw_changed))) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyro derivative low pass cutoff changed
+				if (fabsf(_lp_filter_acceleration[axis].getCutoffFreq() - _param_imu_dgyro_cutoff.get()) > 0.01f) {
+					_reset_filters = true;
+					break;
+				}
+			} else {
+				// gyroz low pass cutoff frequency changed
+				if (fabsf(_lp_filter_velocity[axis].get_cutoff_freq() - _param_imu_gyroz_cutoff.get()) > 0.01f) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyroz notch filter 0 frequency or bandwidth changed
+				const bool nf0z_freq_changed = (fabsf(_notch_filter0_velocity[axis].getNotchFreq() - _param_imu_gyroz_nf0_frq.get()) > 0.01f);
+				const bool nf0z_bw_changed   = (fabsf(_notch_filter0_velocity[axis].getBandwidth() - _param_imu_gyroz_nf0_bw.get()) > 0.01f);
+
+				if ((nf0z_enabled_prev != nf0z_enabled) || (nf0z_enabled && (nf0z_freq_changed || nf0z_bw_changed))) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyroz notch filter 1 frequency or bandwidth changed
+				const bool nf1z_freq_changed = (fabsf(_notch_filter1_velocity[axis].getNotchFreq() - _param_imu_gyroz_nf1_frq.get()) > 0.01f);
+				const bool nf1z_bw_changed   = (fabsf(_notch_filter1_velocity[axis].getBandwidth() - _param_imu_gyroz_nf1_bw.get()) > 0.01f);
+				if ((nf1z_enabled_prev != nf1z_enabled) || (nf1z_enabled && (nf1z_freq_changed || nf1z_bw_changed))) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyroz derivative notch filter frequency or bandwidth changed
+				const bool d_nfz_freq_changed = (fabsf(_notch_filter_acc[axis].getNotchFreq() - _param_imu_dgyroz_nf_frq.get()) > 0.01f);
+				const bool d_nfz_bw_changed   = (fabsf(_notch_filter_acc[axis].getBandwidth() - _param_imu_dgyroz_nf_bw.get()) > 0.01f);
+				if ((d_nfz_enabled_prev != d_nfz_enabled) || (d_nfz_enabled && (d_nfz_freq_changed || d_nfz_bw_changed))) {
+					_reset_filters = true;
+					break;
+				}
+
+				// gyroz derivative low pass cutoff changed
+				if (fabsf(_lp_filter_acceleration[axis].getCutoffFreq() - _param_imu_dgyroz_cutoff.get()) > 0.01f) {
+					_reset_filters = true;
+					break;
+				}
+			}
+		}
 		// IMU_GYRO_RATEMAX
 		if (_param_imu_gyro_ratemax.get() <= 0) {
 			const int32_t imu_gyro_ratemax = _param_imu_gyro_ratemax.get();
@@ -396,49 +547,13 @@ void VehicleAngularVelocity::ParametersUpdate(bool force)
 			_param_imu_gyro_ratemax.commit_no_notification();
 		}
 
-		// gyro low pass cutoff frequency changed
-		for (auto &lp : _lp_filter_velocity) {
-			if (fabsf(lp.get_cutoff_freq() - _param_imu_gyro_cutoff.get()) > 0.01f) {
-				_reset_filters = true;
-				break;
-			}
-		}
 
-		// gyro notch filter 0 frequency or bandwidth changed
-		for (auto &nf : _notch_filter0_velocity) {
-			const bool nf_freq_changed = (fabsf(nf.getNotchFreq() - _param_imu_gyro_nf0_frq.get()) > 0.01f);
-			const bool nf_bw_changed   = (fabsf(nf.getBandwidth() - _param_imu_gyro_nf0_bw.get()) > 0.01f);
-
-			if ((nf0_enabled_prev != nf0_enabled) || (nf0_enabled && (nf_freq_changed || nf_bw_changed))) {
-				_reset_filters = true;
-				break;
-			}
-		}
-
-		// gyro notch filter 1 frequency or bandwidth changed
-		for (auto &nf : _notch_filter1_velocity) {
-			const bool nf_freq_changed = (fabsf(nf.getNotchFreq() - _param_imu_gyro_nf1_frq.get()) > 0.01f);
-			const bool nf_bw_changed   = (fabsf(nf.getBandwidth() - _param_imu_gyro_nf1_bw.get()) > 0.01f);
-
-			if ((nf1_enabled_prev != nf1_enabled) || (nf1_enabled && (nf_freq_changed || nf_bw_changed))) {
-				_reset_filters = true;
-				break;
-			}
-		}
-
-		// gyro derivative low pass cutoff changed
-		for (auto &lp : _lp_filter_acceleration) {
-			if (fabsf(lp.getCutoffFreq() - _param_imu_dgyro_cutoff.get()) > 0.01f) {
-				_reset_filters = true;
-				break;
-			}
-		}
 
 #if !defined(CONSTRAINED_FLASH)
 
 		if (_param_imu_gyro_dnf_en.get() & DynamicNotch::EscRpm) {
 
-			const int32_t esc_rpm_harmonics = math::constrain(_param_imu_gyro_dnf_hmc.get(), (int32_t)1, (int32_t)10);
+			const int32_t esc_rpm_harmonics = math::constrain(_param_imu_gyro_dnf_rpm_hmc.get(), (int32_t)1, (int32_t)10);
 
 			if (_dynamic_notch_filter_esc_rpm && (esc_rpm_harmonics != _esc_rpm_harmonics)) {
 				delete[] _dynamic_notch_filter_esc_rpm;
@@ -579,7 +694,7 @@ void VehicleAngularVelocity::UpdateDynamicNotchEscRpm(const hrt_abstime &time_no
 
 		if (_esc_status_sub.copy(&esc_status) && (time_now_us < esc_status.timestamp + DYNAMIC_NOTCH_FITLER_TIMEOUT)) {
 
-			const float bandwidth_hz = _param_imu_gyro_dnf_bw.get();
+			const float bandwidth_hz = _param_imu_gyro_dnf_rpm_bw.get();
 			const float freq_min = math::max(_param_imu_gyro_dnf_min.get(), bandwidth_hz);
 
 			for (size_t esc = 0; esc < math::min(esc_status.esc_count, (uint8_t)MAX_NUM_ESCS); esc++) {
@@ -591,7 +706,10 @@ void VehicleAngularVelocity::UpdateDynamicNotchEscRpm(const hrt_abstime &time_no
 				if (esc_connected && (time_now_us < esc_report.timestamp + DYNAMIC_NOTCH_FITLER_TIMEOUT)) {
 
 					const float esc_hz = abs(esc_report.esc_rpm) / 60.f;
-
+					#if !defined(CONSTRAINED_FLASH)
+					//  record esc hz
+					_esc_hz[esc] = esc_hz;
+					#endif
 					const bool force_update = force || !_esc_available[esc]; // force parameter update or notch was previously disabled
 
 					for (int harmonic = 0; harmonic < _esc_rpm_harmonics; harmonic++) {
@@ -725,9 +843,9 @@ void VehicleAngularVelocity::UpdateDynamicNotchFFT(const hrt_abstime &time_now_u
 float VehicleAngularVelocity::FilterAngularVelocity(int axis, float data[], int N)
 {
 #if !defined(CONSTRAINED_FLASH)
-
+	_ang_vel_raw(axis) = data[N-1];
 	// Apply dynamic notch filter from ESC RPM
-	if (_dynamic_notch_filter_esc_rpm) {
+	if (_dynamic_notch_filter_esc_rpm && (_param_imu_gyro_dnf_en.get() & DynamicNotch::EscRpm)) {
 		for (int esc = 0; esc < MAX_NUM_ESCS; esc++) {
 			if (_esc_available[esc]) {
 				for (int harmonic = 0; harmonic < _esc_rpm_harmonics; harmonic++) {
@@ -738,16 +856,16 @@ float VehicleAngularVelocity::FilterAngularVelocity(int axis, float data[], int 
 			}
 		}
 	}
-
+	_ang_vel_escnf(axis) = data[N-1];
 	// Apply dynamic notch filter from FFT
-	if (_dynamic_notch_fft_available) {
+	if (_dynamic_notch_fft_available && (_param_imu_gyro_dnf_en.get() & DynamicNotch::FFT)) {
 		for (int peak = MAX_NUM_FFT_PEAKS - 1; peak >= 0; peak--) {
 			if (_dynamic_notch_filter_fft[axis][peak].getNotchFreq() > 0.f) {
 				_dynamic_notch_filter_fft[axis][peak].applyArray(data, N);
 			}
 		}
 	}
-
+	_ang_vel_dnf(axis) = data[N-1];
 #endif // !CONSTRAINED_FLASH
 
 	// Apply general notch filter 0 (IMU_GYRO_NF0_FRQ)
@@ -759,10 +877,10 @@ float VehicleAngularVelocity::FilterAngularVelocity(int axis, float data[], int 
 	if (_notch_filter1_velocity[axis].getNotchFreq() > 0.f) {
 		_notch_filter1_velocity[axis].applyArray(data, N);
 	}
-
+	_ang_vel_nf(axis) = data[N-1];
 	// Apply general low-pass filter (IMU_GYRO_CUTOFF)
 	_lp_filter_velocity[axis].applyArray(data, N);
-
+	_ang_vel_lpf(axis) = data[N-1];
 	// return last filtered sample
 	return data[N - 1];
 }
@@ -773,8 +891,15 @@ float VehicleAngularVelocity::FilterAngularAcceleration(int axis, float inverse_
 	float angular_acceleration_filtered = 0.f;
 
 	for (int n = 0; n < N; n++) {
-		const float angular_acceleration = (data[n] - _angular_velocity_raw_prev(axis)) * inverse_dt_s;
-		angular_acceleration_filtered = _lp_filter_acceleration[axis].update(angular_acceleration);
+		float ang_acc_raw[1] = {(data[n] - _angular_velocity_raw_prev(axis)) * inverse_dt_s};
+		_ang_acc_raw(axis) = ang_acc_raw[0];
+		// first notch filter, then lpf
+		if(_notch_filter_acc[axis].getNotchFreq() > 0.f)
+			_notch_filter_acc[axis].applyArray(ang_acc_raw, 1);
+		const float ang_acc_nf = ang_acc_raw[0];
+		_ang_acc_nf(axis) = ang_acc_nf;
+		angular_acceleration_filtered = _lp_filter_acceleration[axis].update(ang_acc_nf);
+		_ang_acc_lpf(axis) = angular_acceleration_filtered;
 		_angular_velocity_raw_prev(axis) = data[n];
 	}
 
@@ -790,6 +915,8 @@ void VehicleAngularVelocity::Run()
 
 	const hrt_abstime time_now_us = hrt_absolute_time();
 
+	ParametersUpdate();
+
 	// update corrections first to set _selected_sensor
 	const bool selection_updated = SensorSelectionUpdate(time_now_us);
 
@@ -801,9 +928,8 @@ void VehicleAngularVelocity::Run()
 		}
 	}
 
-	ParametersUpdate();
-
 	_calibration.SensorCorrectionsUpdate(selection_updated);
+
 	SensorBiasUpdate(selection_updated);
 
 	if (_reset_filters) {
@@ -925,6 +1051,9 @@ bool VehicleAngularVelocity::CalibrateAndPublish(const hrt_abstime &timestamp_sa
 		_angular_velocity = _calibration.Correct(angular_velocity_uncalibrated) - _bias;
 		_angular_velocity.copyTo(angular_velocity.xyz);
 
+		Vector3f angular_velocity_raw = _calibration.Correct(_ang_vel_raw) - _bias;
+		angular_velocity_raw.copyTo(angular_velocity.xyz_r);
+
 		// Angular acceleration: rotate sensor frame to board, scale raw data to SI, apply any additional configured rotation
 		_angular_acceleration = _calibration.rotation() * angular_acceleration_uncalibrated;
 		_angular_acceleration.copyTo(angular_velocity.xyz_derivative);
@@ -932,6 +1061,29 @@ bool VehicleAngularVelocity::CalibrateAndPublish(const hrt_abstime &timestamp_sa
 		angular_velocity.timestamp = hrt_absolute_time();
 		_vehicle_angular_velocity_pub.publish(angular_velocity);
 
+		// Publish sensor_filter_analysis
+		sensor_filter_analysis_s sfilter_analysis;
+		sfilter_analysis.timestamp_sample = timestamp_sample;
+
+		_ang_acc_raw.copyTo(sfilter_analysis.ac_raw);
+		_ang_acc_nf.copyTo(sfilter_analysis.ac_nf);
+		_ang_acc_lpf.copyTo(sfilter_analysis.ac_lpf);
+		_angular_acceleration.copyTo(sfilter_analysis.ac);
+
+		// lyu: copy and publish, no calibration here
+		_ang_vel_raw.copyTo(sfilter_analysis.av_raw);
+		_ang_vel_escnf.copyTo(sfilter_analysis.av_esc_nf);
+		_ang_vel_dnf.copyTo(sfilter_analysis.av_dnf);
+		_ang_vel_nf.copyTo(sfilter_analysis.av_nf);
+		_ang_vel_lpf.copyTo(sfilter_analysis.av_lpf);
+		_angular_velocity.copyTo(sfilter_analysis.av);
+
+		#if !defined(CONSTRAINED_FLASH)
+		memcpy(sfilter_analysis.esc_hz, _esc_hz, sizeof(_esc_hz));
+		#endif // !CONSTRAINED_FLASH
+
+		sfilter_analysis.timestamp = hrt_absolute_time();
+		_sensor_filter_analysis_pub.publish(sfilter_analysis);
 		// shift last publish time forward, but don't let it get further behind than the interval
 		_last_publish = math::constrain(_last_publish + _publish_interval_min_us,
 						timestamp_sample - _publish_interval_min_us, timestamp_sample);

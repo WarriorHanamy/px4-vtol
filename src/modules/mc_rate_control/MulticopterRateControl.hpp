@@ -59,7 +59,11 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
-
+// sweep_frequencies
+#include <uORB/topics/chirp_sweep.h>
+#include <uORB/topics/mc_rate_ctrl_debug.h>
+#include <uORB/topics/esc_status.h>
+#include <uORB/topics/vel_pitch_notification.h>
 using namespace time_literals;
 
 class MulticopterRateControl : public ModuleBase<MulticopterRateControl>, public ModuleParams, public px4::WorkItem
@@ -89,6 +93,10 @@ private:
 
 	void updateActuatorControlsStatus(const vehicle_torque_setpoint_s &vehicle_torque_setpoint, float dt);
 
+	//sweep frequencies funcs
+	void publishChirpSweep(const hrt_abstime &timestamp_sample);
+	void chirpSignalGenerator(const hrt_abstime &time_start);
+
 	RateControl _rate_control; ///< class for rate control calculations
 
 	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};
@@ -98,7 +106,8 @@ private:
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
 	uORB::Subscription _vehicle_rates_setpoint_sub{ORB_ID(vehicle_rates_setpoint)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
-
+	uORB::Subscription _esc_status_sub{ORB_ID(esc_status)};
+	uORB::Subscription _vel_pitch_notification_sub{ORB_ID(vel_pitch_notification)};
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
 	uORB::SubscriptionCallbackWorkItem _vehicle_angular_velocity_sub{this, ORB_ID(vehicle_angular_velocity)};
@@ -108,6 +117,17 @@ private:
 	uORB::Publication<vehicle_rates_setpoint_s>	_vehicle_rates_setpoint_pub{ORB_ID(vehicle_rates_setpoint)};
 	uORB::Publication<vehicle_torque_setpoint_s>	_vehicle_torque_setpoint_pub;
 	uORB::Publication<vehicle_thrust_setpoint_s>	_vehicle_thrust_setpoint_pub;
+	uORB::Publication<chirp_sweep_s> _chirp_sweep_pub{ORB_ID(chirp_sweep)};
+	uORB::Publication<mc_rate_ctrl_debug_s> _mc_rate_ctrl_debug_pub{ORB_ID(mc_rate_ctrl_debug)};
+
+	orb_advert_t		_mavlink_log_pub{nullptr};	///< mavlink log pub
+
+	enum ChirpChannel {
+		ROLL = 1,
+		PITCH = 2,
+		YAW = 4,
+		THRUST = 8
+	};
 
 	vehicle_control_mode_s	_vehicle_control_mode{};
 	vehicle_status_s	_vehicle_status{};
@@ -122,7 +142,7 @@ private:
 	// keep setpoint values between updates
 	matrix::Vector3f _acro_rate_max;		/**< max attitude rates in acro mode */
 	matrix::Vector3f _rates_setpoint{};
-
+	float _chirp_signal{0.0f};
 	float _battery_status_scale{0.0f};
 	matrix::Vector3f _thrust_setpoint{};
 
@@ -159,6 +179,18 @@ private:
 		(ParamFloat<px4::params::MC_ACRO_SUPEXPO>) _param_mc_acro_supexpo,		/**< superexpo stick curve shape (roll & pitch) */
 		(ParamFloat<px4::params::MC_ACRO_SUPEXPOY>) _param_mc_acro_supexpoy,		/**< superexpo stick curve shape (yaw) */
 
-		(ParamBool<px4::params::MC_BAT_SCALE_EN>) _param_mc_bat_scale_en
+		(ParamBool<px4::params::MC_BAT_SCALE_EN>) _param_mc_bat_scale_en,
+
+		(ParamInt<px4::params::CHIRP_EN>) 	   _param_chirp_en,
+		(ParamFloat<px4::params::CHIRP_FRQ_START>) _param_chirp_f0,
+		(ParamFloat<px4::params::CHIRP_FRQ_END>)   _param_chirp_f1,
+		(ParamFloat<px4::params::CHIRP_TIME>)   _param_chirp_T,
+		(ParamFloat<px4::params::CHIRP_MAG>)    _param_chirp_A,
+
+		(ParamFloat<px4::params::MC_RATEX_D_FRQ>)     _param_mc_rate_D_fc,
+		(ParamFloat<px4::params::MC_RATEX_LPF_FRQ>)  _param_mc_rate_LPF_fc,
+		(ParamFloat<px4::params::MC_RATEZ_D_FRQ>)     _param_mc_ratez_D_fc,
+		(ParamFloat<px4::params::MC_RATEZ_LPF_FRQ>)  _param_mc_ratez_LPF_fc
+		// (ParamInt<px4::params::CBRK_RATE_CTRL>) _param_cbrk_rate_ctrl
 	)
 };

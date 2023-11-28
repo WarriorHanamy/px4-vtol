@@ -57,6 +57,10 @@
 #include <uORB/topics/sensor_selection.h>
 #include <uORB/topics/vehicle_angular_velocity.h>
 
+// lyu -> rec : add the compensator zero lowpass filter
+#include <uORB/topics/sensor_filter_analysis.h>
+#include <adv_control_lib/butterworth_filter.h>
+
 using namespace time_literals;
 
 namespace sensors
@@ -71,7 +75,7 @@ public:
 	void PrintStatus();
 	bool Start();
 	void Stop();
-
+	float GetSampleRate();
 private:
 	void Run() override;
 
@@ -99,6 +103,7 @@ private:
 	static constexpr int MAX_SENSOR_COUNT = 4;
 
 	uORB::Publication<vehicle_angular_velocity_s>     _vehicle_angular_velocity_pub{ORB_ID(vehicle_angular_velocity)};
+	uORB::Publication<sensor_filter_analysis_s>       _sensor_filter_analysis_pub{ORB_ID(sensor_filter_analysis)};
 
 	uORB::Subscription _estimator_selector_status_sub{ORB_ID(estimator_selector_status)};
 	uORB::Subscription _estimator_sensor_bias_sub{ORB_ID(estimator_sensor_bias)};
@@ -118,7 +123,16 @@ private:
 	matrix::Vector3f _bias{};
 
 	matrix::Vector3f _angular_velocity{};
+	matrix::Vector3f _ang_vel_raw{};
+	matrix::Vector3f _ang_vel_escnf{};
+	matrix::Vector3f _ang_vel_dnf{};
+	matrix::Vector3f _ang_vel_nf{};
+	matrix::Vector3f _ang_vel_lpf{};
+
 	matrix::Vector3f _angular_acceleration{};
+	matrix::Vector3f _ang_acc_raw{};
+	matrix::Vector3f _ang_acc_nf{};
+	matrix::Vector3f _ang_acc_lpf{};
 
 	matrix::Vector3f _angular_velocity_raw_prev{};
 	hrt_abstime _timestamp_sample_last{0};
@@ -132,7 +146,9 @@ private:
 	math::LowPassFilter2p<float> _lp_filter_velocity[3] {};
 	math::NotchFilter<float> _notch_filter0_velocity[3] {};
 	math::NotchFilter<float> _notch_filter1_velocity[3] {};
-
+	math::NotchFilter<float> _notch_filter_acc[3] {};
+	// lyu: angular velocity lowpass filters
+	// ButterworthFilter3rd _ang_vel_lpf[3] {};
 #if !defined(CONSTRAINED_FLASH)
 
 	enum DynamicNotch {
@@ -144,7 +160,7 @@ private:
 
 	// ESC RPM
 	static constexpr int MAX_NUM_ESCS = sizeof(esc_status_s::esc) / sizeof(esc_status_s::esc[0]);
-
+	float _esc_hz[MAX_NUM_ESCS] = {};
 	using NotchFilterHarmonic = math::NotchFilter<float>[3][MAX_NUM_ESCS];
 	NotchFilterHarmonic *_dynamic_notch_filter_esc_rpm{nullptr};
 
@@ -183,18 +199,37 @@ private:
 
 	DEFINE_PARAMETERS(
 #if !defined(CONSTRAINED_FLASH)
-		(ParamInt<px4::params::IMU_GYRO_DNF_EN>) _param_imu_gyro_dnf_en,
-		(ParamInt<px4::params::IMU_GYRO_DNF_HMC>) _param_imu_gyro_dnf_hmc,
-		(ParamFloat<px4::params::IMU_GYRO_DNF_BW>) _param_imu_gyro_dnf_bw,
-		(ParamFloat<px4::params::IMU_GYRO_DNF_MIN>) _param_imu_gyro_dnf_min,
+		(ParamInt<px4::params::GYRO_DNF_EN>) _param_imu_gyro_dnf_en,
+		(ParamInt<px4::params::GYRO_DNF_RPM_HMC>) _param_imu_gyro_dnf_rpm_hmc,
+		(ParamFloat<px4::params::GYRO_DNF_RPM_BW>) _param_imu_gyro_dnf_rpm_bw,
+		(ParamFloat<px4::params::GYRO_DNF_FFT_BW>) _param_imu_gyro_dnf_fft_bw,
+		(ParamFloat<px4::params::GYRO_DNF_MIN>) _param_imu_gyro_dnf_min,
 #endif // !CONSTRAINED_FLASH
-		(ParamFloat<px4::params::IMU_GYRO_CUTOFF>) _param_imu_gyro_cutoff,
-		(ParamFloat<px4::params::IMU_GYRO_NF0_FRQ>) _param_imu_gyro_nf0_frq,
-		(ParamFloat<px4::params::IMU_GYRO_NF0_BW>) _param_imu_gyro_nf0_bw,
-		(ParamFloat<px4::params::IMU_GYRO_NF1_FRQ>) _param_imu_gyro_nf1_frq,
-		(ParamFloat<px4::params::IMU_GYRO_NF1_BW>) _param_imu_gyro_nf1_bw,
-		(ParamInt<px4::params::IMU_GYRO_RATEMAX>) _param_imu_gyro_ratemax,
-		(ParamFloat<px4::params::IMU_DGYRO_CUTOFF>) _param_imu_dgyro_cutoff
+// gyro for x,y filters setting
+// vehicle angular velocity
+		(ParamFloat<px4::params::GYROX_CUTOFF>) _param_imu_gyro_cutoff,
+		(ParamFloat<px4::params::GYROX_NF0_FRQ>) _param_imu_gyro_nf0_frq,
+		(ParamFloat<px4::params::GYROX_NF0_BW>) _param_imu_gyro_nf0_bw,
+		(ParamFloat<px4::params::GYROX_NF1_FRQ>) _param_imu_gyro_nf1_frq,
+		(ParamFloat<px4::params::GYROX_NF1_BW>) _param_imu_gyro_nf1_bw,
+// vehicle angular acceleration
+		(ParamFloat<px4::params::DGYROX_CUTOFF>) _param_imu_dgyro_cutoff,
+		(ParamFloat<px4::params::DGYROX_NF_FRQ>) _param_imu_dgyro_nf_frq,
+		(ParamFloat<px4::params::DGYROX_NF_BW>)  _param_imu_dgyro_nf_bw,
+
+// gyro for z filters setting
+// vehicle angular velocity
+		(ParamFloat<px4::params::GYROZ_CUTOFF>) _param_imu_gyroz_cutoff,
+		(ParamFloat<px4::params::GYROZ_NF0_FRQ>) _param_imu_gyroz_nf0_frq,
+		(ParamFloat<px4::params::GYROZ_NF0_BW>) _param_imu_gyroz_nf0_bw,
+		(ParamFloat<px4::params::GYROZ_NF1_FRQ>) _param_imu_gyroz_nf1_frq,
+		(ParamFloat<px4::params::GYROZ_NF1_BW>) _param_imu_gyroz_nf1_bw,
+// vehicle angular acceleration
+		(ParamFloat<px4::params::DGYROZ_CUTOFF>) _param_imu_dgyroz_cutoff,
+		(ParamFloat<px4::params::DGYROZ_NF_FRQ>) _param_imu_dgyroz_nf_frq,
+		(ParamFloat<px4::params::DGYROZ_NF_BW>)  _param_imu_dgyroz_nf_bw,
+// gyro publish rate
+		(ParamInt<px4::params::IMU_GYRO_RATEMAX>) _param_imu_gyro_ratemax
 	)
 };
 

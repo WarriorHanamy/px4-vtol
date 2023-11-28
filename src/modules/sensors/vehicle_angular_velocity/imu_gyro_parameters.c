@@ -32,13 +32,13 @@
  ****************************************************************************/
 
 /**
-* Notch filter frequency for gyro
+* Notch filter frequency for gyro in x and y axis
 *
 * The center frequency for the 2nd order notch filter on the primary gyro.
 * This filter can be enabled to avoid feedback amplification of structural resonances at a specific frequency.
 * This only affects the signal sent to the controllers, not the estimators.
-* Applies to both angular velocity and angular acceleration sent to the controllers.
-* See "IMU_GYRO_NF0_BW" to set the bandwidth of the filter.
+* Applies to angular velocity sent to the controllers.
+* See "GYROX_NF0_BW" to set the bandwidth of the filter.
 *
 * A value of 0 disables the filter.
 *
@@ -48,14 +48,14 @@
 * @reboot_required true
 * @group Sensors
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_NF0_FRQ, 0.0f);
+PARAM_DEFINE_FLOAT(GYROX_NF0_FRQ, 0.0f);
 
 /**
-* Notch filter bandwidth for gyro
+* Notch filter bandwidth for gyro in x and y axis
 *
 * The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
-* See "IMU_GYRO_NF0_FRQ" to activate the filter and to set the notch frequency.
-* Applies to both angular velocity and angular acceleration sent to the controllers.
+* See "GYROX_NF0_FRQ" to activate the filter and to set the notch frequency.
+* Applies to angular velocity sent to the controllers.
 *
 * @min 0
 * @max 100
@@ -63,16 +63,16 @@ PARAM_DEFINE_FLOAT(IMU_GYRO_NF0_FRQ, 0.0f);
 * @reboot_required true
 * @group Sensors
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_NF0_BW, 20.0f);
+PARAM_DEFINE_FLOAT(GYROX_NF0_BW, 10.0f);
 
 /**
-* Notch filter 2 frequency for gyro
+* Notch filter frequency for gyro in z axis
 *
 * The center frequency for the 2nd order notch filter on the primary gyro.
 * This filter can be enabled to avoid feedback amplification of structural resonances at a specific frequency.
 * This only affects the signal sent to the controllers, not the estimators.
-* Applies to both angular velocity and angular acceleration sent to the controllers.
-* See "IMU_GYRO_NF1_BW" to set the bandwidth of the filter.
+* Applies to angular velocity sent to the controllers.
+* See "GYROZ_NF0_BW" to set the bandwidth of the filter.
 *
 * A value of 0 disables the filter.
 *
@@ -82,14 +82,14 @@ PARAM_DEFINE_FLOAT(IMU_GYRO_NF0_BW, 20.0f);
 * @reboot_required true
 * @group Sensors
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_NF1_FRQ, 0.0f);
+PARAM_DEFINE_FLOAT(GYROZ_NF0_FRQ, 0.0f);
 
 /**
-* Notch filter 1 bandwidth for gyro
+* Notch filter bandwidth for gyro in z axis
 *
 * The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
-* See "IMU_GYRO_NF1_FRQ" to activate the filter and to set the notch frequency.
-* Applies to both angular velocity and angular acceleration sent to the controllers.
+* See "GYROZ_NF0FC" to activate the filter and to set the notch frequency.
+* Applies to angular velocity sent to the controllers.
 *
 * @min 0
 * @max 100
@@ -97,15 +97,167 @@ PARAM_DEFINE_FLOAT(IMU_GYRO_NF1_FRQ, 0.0f);
 * @reboot_required true
 * @group Sensors
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_NF1_BW, 20.0f);
+PARAM_DEFINE_FLOAT(GYROZ_NF0_BW, 10.0f);
+
+/**
+* Notch filter 2 frequency for gyro in x and y axis
+*
+* The center frequency for the 2nd order notch filter on the primary gyro.
+* This filter can be enabled to avoid feedback amplification of structural resonances at a specific frequency.
+* This only affects the signal sent to the controllers, not the estimators.
+* Applies to angular velocity sent to the controllers.
+* See "GYROX_NF1_BW" to set the bandwidth of the filter.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(GYROX_NF1_FRQ, 0.0f);
+
+/**
+* Notch filter 2 frequency for gyro in x and y axis
+*
+* The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
+* See "GYRO_NF1_FRQ" to activate the filter and to set the notch frequency.
+* Applies to angular velocity sent to the controllers.
+*
+* @min 0
+* @max 100
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(GYROX_NF1_BW, 20.0f);
+
+/**
+* Useless for current project, add this to avoid compile error
+*
+* The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
+* See "GYRO_NF1_FRQ" to activate the filter and to set the notch frequency.
+* Applies to angular velocity sent to the controllers.
+*
+* @min 0
+* @max 100
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(GYRO_CUTOFF, 20.0f);
+
+/**
+* Notch filter 2 frequency for gyro in z axis
+*
+* The center frequency for the 2nd order notch filter on the primary gyro.
+* This filter can be enabled to avoid feedback amplification of structural resonances at a specific frequency.
+* This only affects the signal sent to the controllers, not the estimators.
+* Applies to angular velocity sent to the controllers.
+* See "GYROZ_NF1_BW" to set the bandwidth of the filter.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(GYROZ_NF1_FRQ, 0.0f);
+
+/**
+* Notch filter 1 bandwidth for gyro z axis
+*
+* The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
+* See "GYROZ_NF1_FRQ" to activate the filter and to set the notch frequency.
+* Applies to angular velocity sent to the controllers.
+*
+* @min 0
+* @max 100
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(GYROZ_NF1_BW, 10.0f);
 
 
 /**
-* Low pass filter cutoff frequency for gyro
+* Notch filter frequency for angular acceleration (D-Term filter) in x and y axis
+*
+* The center frequency for the 2nd order notch filter on the primary gyro.
+* This filter can be enabled to avoid feedback amplification of structural resonances at a specific frequency.
+* This only affects the signal sent to the controllers, not the estimators.
+* Applies to angular acceleration sent to the controllers.
+* See "DGYROX_NF_BW" to set the bandwidth of the filter.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(DGYROX_NF_FRQ, 0.0f);
+
+/**
+* Notch filter bandwidth for angular acceleration (D-Term filter) in x and y axis
+*
+* The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
+* See "DGYROX_NF_FRQ" to activate the filter and to set the notch frequency.
+* Applies to angular acceleration sent to the controllers.
+*
+* @min 0
+* @max 100
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(DGYROX_NF_BW, 10.0f);
+
+
+/**
+* Notch filter frequency for angular acceleration (D-Term filter) in z axis
+*
+* The center frequency for the 2nd order notch filter on the primary gyro.
+* This filter can be enabled to avoid feedback amplification of structural resonances at a specific frequency.
+* This only affects the signal sent to the controllers, not the estimators.
+* Applies to angular acceleration sent to the controllers.
+* See "DGYROZ_NF_BW" to set the bandwidth of the filter.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(DGYROZ_NF_FRQ, 0.0f);
+
+/**
+* Notch filter bandwidth for angular acceleration (D-Term filter) in z axis
+*
+* The frequency width of the stop band for the 2nd order notch filter on the primary gyro.
+* See "DGYROZ_NF_FRQ" to activate the filter and to set the notch frequency.
+* Applies to angular acceleration sent to the controllers.
+*
+* @min 0
+* @max 100
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(DGYROZ_NF_BW, 10.0f);
+
+/**
+* Low pass filter cutoff frequency for gyro x and y axis
 *
 * The cutoff frequency for the 2nd order butterworth filter on the primary gyro.
 * This only affects the angular velocity sent to the controllers, not the estimators.
-* It applies also to the angular acceleration (D-Term filter), see IMU_DGYRO_CUTOFF.
+* It applies also to the angular acceleration (D-Term filter), see DGYRO_CUTOFF.
 *
 * A value of 0 disables the filter.
 *
@@ -115,7 +267,64 @@ PARAM_DEFINE_FLOAT(IMU_GYRO_NF1_BW, 20.0f);
 * @reboot_required true
 * @group Sensors
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_CUTOFF, 40.0f);
+PARAM_DEFINE_FLOAT(GYROX_CUTOFF, 40.0f);
+
+/**
+* Low pass filter cutoff frequency for gyro z axis
+*
+* The cutoff frequency for the 2nd order butterworth filter on the primary gyro.
+* This only affects the angular velocity sent to the controllers, not the estimators.
+* It applies also to the angular acceleration (D-Term filter), see DGYRO_CUTOFF.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(GYROZ_CUTOFF, 30.0f);
+
+/**
+* Cutoff frequency for angular acceleration (D-Term filter) x and y axis
+*
+* The cutoff frequency for the 2nd order butterworth filter used on
+* the time derivative of the measured angular velocity, also known as
+* the D-term filter in the rate controller. The D-term uses the derivative of
+* the rate and thus is the most susceptible to noise. Therefore, using
+* a D-term filter allows to increase GYRO_CUTOFF, which
+* leads to reduced control latency and permits to increase the P gains.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(DGYROX_CUTOFF, 30.0f);
+
+/**
+* Cutoff frequency for angular acceleration (D-Term filter) z axis
+*
+* The cutoff frequency for the 2nd order butterworth filter used on
+* the time derivative of the measured angular velocity, also known as
+* the D-term filter in the rate controller. The D-term uses the derivative of
+* the rate and thus is the most susceptible to noise. Therefore, using
+* a D-term filter allows to increase GYRO_CUTOFF, which
+* leads to reduced control latency and permits to increase the P gains.
+*
+* A value of 0 disables the filter.
+*
+* @min 0
+* @max 1000
+* @unit Hz
+* @reboot_required true
+* @group Sensors
+*/
+PARAM_DEFINE_FLOAT(DGYROZ_CUTOFF, 30.0f);
 
 /**
 * Gyro control data maximum publication rate (inner loop rate)
@@ -139,53 +348,46 @@ PARAM_DEFINE_FLOAT(IMU_GYRO_CUTOFF, 40.0f);
 */
 PARAM_DEFINE_INT32(IMU_GYRO_RATEMAX, 400);
 
-/**
-* Cutoff frequency for angular acceleration (D-Term filter)
-*
-* The cutoff frequency for the 2nd order butterworth filter used on
-* the time derivative of the measured angular velocity, also known as
-* the D-term filter in the rate controller. The D-term uses the derivative of
-* the rate and thus is the most susceptible to noise. Therefore, using
-* a D-term filter allows to increase IMU_GYRO_CUTOFF, which
-* leads to reduced control latency and permits to increase the P gains.
-*
-* A value of 0 disables the filter.
-*
-* @min 0
-* @max 1000
-* @unit Hz
-* @reboot_required true
-* @group Sensors
-*/
-PARAM_DEFINE_FLOAT(IMU_DGYRO_CUTOFF, 30.0f);
+
 
 /**
 * IMU gyro dynamic notch filtering
 *
 * Enable bank of dynamically updating notch filters.
-* Requires ESC RPM feedback or onboard FFT (IMU_GYRO_FFT_EN).
+* Requires ESC RPM feedback or onboard FFT (GYRO_FFT_EN).
 * @group Sensors
 * @min 0
 * @max 3
 * @bit 0 ESC RPM
 * @bit 1 FFT
 */
-PARAM_DEFINE_INT32(IMU_GYRO_DNF_EN, 0);
+PARAM_DEFINE_INT32(GYRO_DNF_EN, 0);
 
 /**
-* IMU gyro ESC notch filter bandwidth
+* IMU gyro FFT NDF notch filter bandwidth
+*
+* Bandwidth per notch filter when using dynamic notch filtering with onbard FFT.
+* Maybe Useless, since fft automatically choose resolution
+* @group Sensors
+* @unit Hz
+* @min 1
+* @max 30
+*/
+PARAM_DEFINE_FLOAT(GYRO_DNF_FFT_BW, 10.f);
+
+/**
+* IMU gyro ESC RPM notch filter bandwidth
 *
 * Bandwidth per notch filter when using dynamic notch filtering with ESC RPM.
 *
 * @group Sensors
-* @unit Hz
-* @min 5
+* @min 1
 * @max 30
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_DNF_BW, 15.f);
+PARAM_DEFINE_FLOAT(GYRO_DNF_RPM_BW, 10.f);
 
 /**
-* IMU gyro dynamic notch filter harmonics
+* IMU gyro ESC RPM dynamic notch filter harmonics
 *
 * ESC RPM number of harmonics (multiples of RPM) for ESC RPM dynamic notch filtering.
 *
@@ -193,7 +395,7 @@ PARAM_DEFINE_FLOAT(IMU_GYRO_DNF_BW, 15.f);
 * @min 1
 * @max 7
 */
-PARAM_DEFINE_INT32(IMU_GYRO_DNF_HMC, 3);
+PARAM_DEFINE_INT32(GYRO_DNF_RPM_HMC, 3);
 
 /**
 * IMU gyro dynamic notch filter minimum frequency
@@ -203,4 +405,4 @@ PARAM_DEFINE_INT32(IMU_GYRO_DNF_HMC, 3);
 * @group Sensors
 * @unit Hz
 */
-PARAM_DEFINE_FLOAT(IMU_GYRO_DNF_MIN, 25.f);
+PARAM_DEFINE_FLOAT(GYRO_DNF_MIN, 25.f);

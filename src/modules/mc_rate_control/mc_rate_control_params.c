@@ -398,3 +398,129 @@ PARAM_DEFINE_FLOAT(MC_ACRO_SUPEXPOY, 0.7f);
  * @group Multicopter Rate Control
  */
 PARAM_DEFINE_INT32(MC_BAT_SCALE_EN, 0);
+
+
+/**
+ * Chirp Sweep injection enable and channel
+ *
+ * !!! choose one channel plz !!!
+ * enable to open and choose which channel to inject the chirp signal
+ *
+ * @min 0
+ * @max 15
+ * @bit 0 roll
+ * @bit 1 pitch
+ * @bit 2 yaw
+ * @bit 3 thrust
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_INT32(CHIRP_EN, 0);
+
+/**
+ * Chirp Sweep injected signal start frequency(HZ)
+ *
+ * f0 of chirp = A*sin(2*pi*(c/2*t^2+f0*t)); c=(f1-f0)/T
+ * the chirp signal oscillate at the start frequency: https://en.wikipedia.org/wiki/Chirp
+ * use the start freq, end freq, signal time to built the linear chirp signal
+ *
+ * @min 0.01
+ * @max 500.0
+ * @decimal 2
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(CHIRP_FRQ_START, 0.50f);
+
+/**
+ * Chirp Sweep injected signal end frequency(HZ)
+ *
+ * f1 of chirp = A*sin(2*pi*(c/2*t^2+f0*t)); c=(f1-f0)/T
+ * the chirp signal oscillate at the start frequency: https://en.wikipedia.org/wiki/Chirp
+ * use the start freq, end freq, signal time to built the linear chirp signal
+ *
+ * @min 0.01
+ * @max 1000.0
+ * @decimal 2
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(CHIRP_FRQ_END, 50.0f);
+
+/**
+ * Chirp Sweep injected signal duration time(s)
+ *
+ * T of chirp = A*sin(2*pi*(c/2*t^2+f0*t)); c=(f1-f0)/T
+ * the chirp signal oscillate at the start frequency: https://en.wikipedia.org/wiki/Chirp
+ * use the start freq, end freq, signal time to built the linear chirp signal
+ *
+ * @min 5.0
+ * @max 1000.0
+ * @decimal 2
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(CHIRP_TIME, 60.0f);
+
+
+/**
+ * Chirp Sweep injected signal magnitude
+ *
+ * A of chirp = A*sin(2*pi*(c/2*t^2+f0*t)); c=(f1-f0)/T
+ * the chirp signal oscillate at the start frequency: https://en.wikipedia.org/wiki/Chirp
+ * use the start freq, end freq, signal time to built the linear chirp signal
+ *
+ * @min 0.001
+ * @max 100.0
+ * @decimal 3
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(CHIRP_MAG, 0.010f);
+
+/**
+ * angular velocity control D term Frequency xy axis
+ *
+ * D_term = s/[s/(2*pi*D_FRQ)+1], D term use bilinear transformation
+ * s = 2/dt*(z-1)/(z+1)
+ *
+ * @min 0.001
+ * @max 200.0
+ * @decimal 3
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(MC_RATEX_D_FRQ, 15.0f);
+
+/**
+ * angular velocity control D term Frequency z axis
+ *
+ * D_term = s/[s/(2*pi*D_FRQ)+1], D term use bilinear transformation
+ * s = 2/dt*(z-1)/(z+1)
+ *
+ * @min 0.001
+ * @max 200.0
+ * @decimal 3
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(MC_RATEZ_D_FRQ, 10.0f);
+
+/**
+ * angular velocity error lowpass filter cutoff frequency Hz xy axis
+ *
+ * set lowpass filter parameters: lpf.set(lpf_frq, fs)
+ * ang_rate_err_lpf = lpf(ang_rate_err)
+ *
+ * @min 0.001
+ * @max 200.0
+ * @decimal 3
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(MC_RATEX_LPF_FRQ, 30.0f);
+
+/**
+ * angular velocity error lowpass filter cutoff frequency Hz z axis
+ *
+ * set lowpass filter parameters: lpf.set(lpf_frq, fs)
+ * ang_rate_err_lpf = lpf(ang_rate_err)
+ *
+ * @min 0.001
+ * @max 200.0
+ * @decimal 3
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(MC_RATEZ_LPF_FRQ, 25.0f);

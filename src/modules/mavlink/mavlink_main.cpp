@@ -1498,8 +1498,8 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("COLLISION", unlimited_rate);
 		configure_stream_local("DISTANCE_SENSOR", 0.5f);
 		configure_stream_local("EFI_STATUS", 2.0f);
-		configure_stream_local("ESC_INFO", unlimited_ratef);
-		configure_stream_local("ESC_STATUS", unlimited_ratef);
+		configure_stream_local("ESC_INFO", unlimited_rate);
+		configure_stream_local("ESC_STATUS", unlimited_rate);
 		configure_stream_local("ESTIMATOR_STATUS", 0.5f);
 		configure_stream_local("EXTENDED_SYS_STATE", 1.0f);
 		configure_stream_local("GIMBAL_DEVICE_ATTITUDE_STATUS", 1.0f);

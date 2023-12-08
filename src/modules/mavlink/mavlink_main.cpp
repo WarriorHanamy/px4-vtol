@@ -1551,8 +1551,8 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		configure_stream_local("ATTITUDE", 100.0f);
 		configure_stream_local("ALTITUDE", 10.0f);
 		configure_stream_local("DISTANCE_SENSOR", 10.0f);
-		configure_stream_local("ESC_INFO", unlimited_ratef);
-		configure_stream_local("ESC_STATUS", unlimited_ratef);
+		configure_stream_local("ESC_INFO", unlimited_rate);
+		configure_stream_local("ESC_STATUS", unlimited_rate);
 		configure_stream_local("MOUNT_ORIENTATION", 10.0f);
 		configure_stream_local("OBSTACLE_DISTANCE", 10.0f);
 		configure_stream_local("ODOMETRY", 30.0f);

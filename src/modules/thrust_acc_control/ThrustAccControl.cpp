@@ -83,23 +83,9 @@ ThrustAccControl::parameters_updated()
 	_thr_p = _param_thr_p.get();
 	_thr_cur_a = _param_thr_curve_a.get();
 	_thr_cur_b = _param_thr_curve_b.get();
-	// const Vector3f rate_k = Vector3f(_param_mc_rollrate_k.get(), _param_mc_pitchrate_k.get(), _param_mc_yawrate_k.get());
+	_timeout_acc = _param_thr_timeout_acc.get();
+	_timeout_time = _param_sys_timeout_time.get() * 1e5;
 
-	// _rate_control.setPidGains(
-	// 	rate_k.emult(Vector3f(_param_mc_rollrate_p.get(), _param_mc_pitchrate_p.get(), _param_mc_yawrate_p.get())),
-	// 	rate_k.emult(Vector3f(_param_mc_rollrate_i.get(), _param_mc_pitchrate_i.get(), _param_mc_yawrate_i.get())),
-	// 	rate_k.emult(Vector3f(_param_mc_rollrate_d.get(), _param_mc_pitchrate_d.get(), _param_mc_yawrate_d.get())));
-
-	// _rate_control.setIntegratorLimit(
-	// 	Vector3f(_param_mc_rr_int_lim.get(), _param_mc_pr_int_lim.get(), _param_mc_yr_int_lim.get()));
-
-	// _rate_control.setFeedForwardGain(
-	// 	Vector3f(_param_mc_rollrate_ff.get(), _param_mc_pitchrate_ff.get(), _param_mc_yawrate_ff.get()));
-
-
-	// // manual rate control acro mode rate limits
-	// _acro_rate_max = Vector3f(radians(_param_mc_acro_r_max.get()), radians(_param_mc_acro_p_max.get()),
-	// 			  radians(_param_mc_acro_y_max.get()));
 }
 
 
@@ -146,8 +132,22 @@ ThrustAccControl::Run()
 		// // must enable thrust_acc_control to allow it control VehicleThrust
 		if (_vehicle_control_mode.flag_control_thrust_acc_enabled == true) {
 		_vehicle_thrust_acc_setpoint_sub.update();
+		_last_run = _vehicle_thrust_acc_setpoint_sub.get().timestamp;
 		_thrust_acc_sp = _vehicle_thrust_acc_setpoint_sub.get().thrust_acc_sp;
 		_rates_setpoint = matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
+
+		if (_last_run && hrt_absolute_time()  -  _last_run > _timeout_time)
+		{
+			PX4_WARN("Haven't Received Thrust Acc Setpoint Messages! Restored to Hold mode");
+			PX4_WARN("Timestamp: %ld", (int64_t)(hrt_absolute_time()));
+			_thrust_acc_sp = _timeout_acc;
+			_rates_setpoint(0) = 0.0;
+			_rates_setpoint(1) = 0.0;
+			_rates_setpoint(2) = 0.0;
+		}
+
+		// _thrust_acc_setpoint_msg.timestamp
+		// if(_thrust_acc_sp.timestamp)
 		float normalized_u = get_u_inverse_model(_thrust_acc_sp);
 
 

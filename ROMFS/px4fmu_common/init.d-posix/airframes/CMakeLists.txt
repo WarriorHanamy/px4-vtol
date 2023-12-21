@@ -78,6 +78,7 @@ px4_add_romfs_files(
 	4005_gz_x500_vision
 	4006_gz_px4vision
 
+	4100_gz_tailsitter
 	6011_gazebo-classic_typhoon_h480
 	6011_gazebo-classic_typhoon_h480.post
 

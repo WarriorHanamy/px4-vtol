@@ -28,7 +28,7 @@ sudo apt-get install gz-garden
 # Usage
 ```shell
 git clone git@github.com:SYSU-HILAB/px4-v1.14.0-stable.git
-bash Tool/setup/ubuntu.sh
+bash Tools/setup/ubuntu.sh
 git submodule update --init --recursive
 ```
 ## exp. fmu-6c  and sitl

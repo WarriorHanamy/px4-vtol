@@ -78,3 +78,31 @@ PARAM_DEFINE_FLOAT(THR_CUR_QDRTC_A, 11.019786910197855f);
  * @group Multicopter Rate Control
  */
 PARAM_DEFINE_FLOAT(THR_CUR_QDRTC_B, 5.380213089802145f);
+
+
+
+/**
+ * thrust contrl timeout acc when mpc is lost
+ *
+ * thrust contrl timeout acc when mpc is lost
+ *
+ * @min 9.8
+ * @max 12.0
+ * @decimal 3
+ * @increment 0.01
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(THR_TMO_ACC, 10.0f);
+
+
+
+/**
+ * thrust contrl timeout time when mpc is lost  [0.1s]
+ *
+ * thrust contrl timeout time when mpc is lost, for example,  5 is 0.5s.
+ *
+ * @min 1
+ * @max 10
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_INT32(THR_TMO_TIME, 2);

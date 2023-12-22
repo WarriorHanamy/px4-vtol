@@ -5,11 +5,14 @@
 # @type Quadrotor
 #
 
-. ${R}etc/init.d/rc.mc_defaults
+# . ${R}etc/init.d/rc.mc_defaults
+. ${R}etc/init.d/rc.vtol_defaults
 
 PX4_SIMULATOR=${PX4_SIMULATOR:=gz}
 PX4_GZ_WORLD=${PX4_GZ_WORLD:=default}
 PX4_SIM_MODEL=${PX4_SIM_MODEL:=tailsitter}
+
+param set-default MAV_TYPE 20
 
 param set-default SIM_GZ_EN 1
 
@@ -19,7 +22,7 @@ param set-default SENS_EN_GPSSIM 1
 param set-default SENS_EN_BAROSIM 0
 param set-default SENS_EN_MAGSIM 1
 
-param set-default CA_AIRFRAME 0
+param set-default CA_AIRFRAME 4		# 4：tailsitter
 param set-default CA_ROTOR_COUNT 4
 
 param set-default CA_ROTOR0_PX 0.13
@@ -42,6 +45,9 @@ param set-default SIM_GZ_EC_FUNC1 101
 param set-default SIM_GZ_EC_FUNC2 102
 param set-default SIM_GZ_EC_FUNC3 103
 param set-default SIM_GZ_EC_FUNC4 104
+param set-default SIM_GZ_EC_FUNC5 0
+param set-default SIM_GZ_EC_FUNC6 201
+param set-default SIM_GZ_EC_FUNC7 202
 
 param set-default SIM_GZ_EC_MIN1 150
 param set-default SIM_GZ_EC_MIN2 150
@@ -53,4 +59,59 @@ param set-default SIM_GZ_EC_MAX2 1000
 param set-default SIM_GZ_EC_MAX3 1000
 param set-default SIM_GZ_EC_MAX4 1000
 
+# TODO: set 567 max and mini
+
 param set-default MPC_THR_HOVER 0.60
+
+# bypass the flight checks without airspeed sensor
+param set-default CBRK_AIRSPD_CHK 162128
+
+param set-default CA_SV_CS_COUNT 2	# control surface
+param set-default CA_SV_CS0_TYPE 5	# Control Surface ${i} type, 5: Left Elevon;  6: Right Elevon
+param set-default CA_SV_CS0_TRQ_P 0.5   # Control Surface ${i} pitch torque scaling
+param set-default CA_SV_CS0_TRQ_Y -0.5	# Control Surface ${i} yaw torque scaling (fixed wing frame: roll)
+param set-default CA_SV_CS1_TYPE 6
+param set-default CA_SV_CS1_TRQ_P 0.5
+param set-default CA_SV_CS1_TRQ_Y 0.5
+
+# LYU: needed ?
+param set-default PWM_MAIN_FUNC1 101
+param set-default PWM_MAIN_FUNC2 102
+param set-default PWM_MAIN_FUNC3 103
+param set-default PWM_MAIN_FUNC4 104
+param set-default PWM_MAIN_FUNC5 0
+param set-default PWM_MAIN_FUNC6 201
+param set-default PWM_MAIN_FUNC7 202
+param set-default PWM_MAIN_REV 96 # invert both elevons
+
+# Single-EKF (for replay)
+# param set-default EKF2_MULTI_IMU 0
+# param set-default SENS_IMU_MODE 1
+
+## set fixed-wing parameters
+# param set-default FW_P_TC 0.6
+# param set-default FW_PR_FF 0.1
+# param set-default FW_PSP_OFF 2
+# param set-default FW_RR_FF 0.1
+# param set-default FW_RR_I 0.2
+# param set-default FW_RR_P 0.3
+# param set-default FW_THR_TRIM 0.35
+# param set-default FW_THR_MAX 0.8
+# param set-default FW_THR_MIN 0.05
+# param set-default FW_T_CLMB_MAX 6
+# param set-default FW_T_HRATE_FF 0.5
+# param set-default FW_T_SINK_MAX 3
+# param set-default FW_T_SINK_MIN 1.6
+
+## set MC param
+param set-default MC_AIRMODE 1 		#@value 0 Disabled; value 1 Roll/Pitch; value 2 Roll/Pitch/Yaw
+
+## set transition param
+param set-default VT_ARSP_TRANS 10
+param set-default VT_B_TRANS_DUR 5
+param set-default VT_FW_DIFTHR_EN 1
+param set-default VT_FW_DIFTHR_S_Y 1
+param set-default VT_F_TRANS_DUR 1.5
+param set-default VT_TYPE 0
+
+param set-default WV_EN 0

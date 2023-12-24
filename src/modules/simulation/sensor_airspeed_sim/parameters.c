@@ -37,11 +37,23 @@
  * @reboot_required true
  * @min 0
  * @max 1
- * @group Sensors
+ * @group Simulator
  * @value 0 Disabled
  * @value 1 Enabled
   */
 PARAM_DEFINE_INT32(SENS_EN_ARSPDSIM, 0);
+
+/**
+ * Enable HI LAB VTOL airspeed simulation sensor rotation
+ *
+ * @reboot_required true
+ * @min 0
+ * @max 1
+ * @group Simulator
+ * @value 0 Disabled
+ * @value 1 Enabled
+  */
+PARAM_DEFINE_INT32(HILAB_ARSPDROT, 0);
 
 /**
  * Dynamically simulate failure of airspeed sensor instance
@@ -49,8 +61,50 @@ PARAM_DEFINE_INT32(SENS_EN_ARSPDSIM, 0);
  * @reboot_required true
  * @min 0
  * @max 1
- * @group Sensors
+ * @group Simulator
  * @value 0 Disabled
  * @value 1 Enabled
   */
 PARAM_DEFINE_INT32(SIM_ARSPD_FAIL, 0);
+
+/**
+ * Simulated airspeed sensor rotation Roll in deg
+ *
+ * rotated in zyx
+ *
+ * @reboot_required true
+ * @min -180
+ * @max 180
+ * @decimal 3
+ * @increment 0.01
+ * @group Simulator
+ */
+PARAM_DEFINE_FLOAT(SIM_ARSP_ROT_R, 0.0f);
+
+/**
+ * Simulated airspeed sensor rotation Roll in deg
+ *
+ * rotated in zyx
+ *
+ * @reboot_required true
+ * @min -180
+ * @max 180
+ * @decimal 3
+ * @increment 0.01
+ * @group Simulator
+ */
+PARAM_DEFINE_FLOAT(SIM_ARSP_ROT_P, 0.0f);
+
+/**
+ * Simulated airspeed sensor rotation Roll in deg
+ *
+ * rotated in zyx
+ *
+ * @reboot_required true
+ * @min -180
+ * @max 180
+ * @decimal 3
+ * @increment 0.01
+ * @group Simulator
+ */
+PARAM_DEFINE_FLOAT(SIM_ARSP_ROT_Y, 0.0f);

@@ -215,11 +215,16 @@ void Tailsitter::update_transition_state()
 	if (_vtol_mode == vtol_mode::TRANSITION_FRONT_P1) {
 
 		// calculate pitching rate - and constrain to at least 0.1s transition time
+		// lyu: TODO: optimization
 		const float trans_pitch_rate = M_PI_2_F / math::max(_param_vt_f_trans_dur.get(), 0.1f);
 
 		if (tilt < M_PI_2_F - math::radians(_param_fw_psp_off.get())) {
-			_q_trans_sp = Quatf(AxisAnglef(_trans_rot_axis,
-						       _time_since_trans_start * trans_pitch_rate)) * _q_trans_start;
+			// lyu: temp use for debug, TODO: modify here
+			const float max_tilt = math::min(_time_since_trans_start * trans_pitch_rate, 1.5f);
+			_q_trans_sp = Quatf(AxisAnglef(_trans_rot_axis, max_tilt)) * _q_trans_start;
+
+			// _q_trans_sp = Quatf(AxisAnglef(_trans_rot_axis,
+			// 			       _time_since_trans_start * trans_pitch_rate)) * _q_trans_start;
 		}
 
 	} else if (_vtol_mode == vtol_mode::TRANSITION_BACK) {
@@ -291,7 +296,8 @@ void Tailsitter::fill_actuator_outputs()
 
 		_thrust_setpoint_0->xyz[2] = -_vehicle_thrust_setpoint_virtual_fw->xyz[0];
 
-		/* allow differential thrust if enabled */
+		/* allow differential thrust if enabled, otherwise, all rotor with same rpm according to _thrust_setpoint_0->xyz[2] */
+		// lyu: TODO: optimization here
 		if (_param_vt_fw_difthr_en.get() & static_cast<int32_t>(VtFwDifthrEnBits::YAW_BIT)) {
 			_torque_setpoint_0->xyz[0] = _vehicle_torque_setpoint_virtual_fw->xyz[0] * _param_vt_fw_difthr_s_y.get();
 		}
@@ -305,6 +311,7 @@ void Tailsitter::fill_actuator_outputs()
 		}
 
 	} else {
+		// lyu: In transition and MC mode, use mc control outputs
 		_torque_setpoint_0->xyz[0] = _vehicle_torque_setpoint_virtual_mc->xyz[0];
 		_torque_setpoint_0->xyz[1] = _vehicle_torque_setpoint_virtual_mc->xyz[1];
 		_torque_setpoint_0->xyz[2] = _vehicle_torque_setpoint_virtual_mc->xyz[2];
@@ -313,11 +320,35 @@ void Tailsitter::fill_actuator_outputs()
 	}
 
 	// Control surfaces
-	if (!_param_vt_elev_mc_lock.get() || _vtol_mode != vtol_mode::MC_MODE) {
-		_torque_setpoint_1->xyz[0] = _vehicle_torque_setpoint_virtual_fw->xyz[0];
+	// LYU: TODO: anytime with big velocity will control the surface
+	// if (!_param_vt_elev_mc_lock.get() || _vtol_mode != vtol_mode::MC_MODE) {
+	// 	_torque_setpoint_1->xyz[0] = _vehicle_torque_setpoint_virtual_fw->xyz[0];
+	// 	_torque_setpoint_1->xyz[1] = _vehicle_torque_setpoint_virtual_fw->xyz[1];
+	// 	_torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_fw->xyz[2];
+	// }
+
+	// if ((!_param_vt_elev_mc_lock.get()) && (_vtol_mode != vtol_mode::FW_MODE)) {
+	// 	// lyu: hovering MC: xyz:forward right down FW: xyz: up right forward
+	// 	_torque_setpoint_1->xyz[0] = -_vehicle_torque_setpoint_virtual_mc->xyz[2];
+	// 	_torque_setpoint_1->xyz[1] = _vehicle_torque_setpoint_virtual_mc->xyz[1];
+	// 	_torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_mc->xyz[0];
+	// }
+
+	if (_vtol_mode == vtol_mode::FW_MODE) {
+		// _torque_setpoint_1->xyz[0] = _vehicle_torque_setpoint_virtual_fw->xyz[0];
+		// _torque_setpoint_1->xyz[1] = _vehicle_torque_setpoint_virtual_fw->xyz[1];
+		// _torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_fw->xyz[2];
+		_torque_setpoint_1->xyz[0] = -_vehicle_torque_setpoint_virtual_fw->xyz[2];
 		_torque_setpoint_1->xyz[1] = _vehicle_torque_setpoint_virtual_fw->xyz[1];
-		_torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_fw->xyz[2];
+		_torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_fw->xyz[0];
+	} else {
+		// lyu: hovering MC: xyz:forward right down FW: xyz: up right forward
+		_torque_setpoint_1->xyz[0] = -_vehicle_torque_setpoint_virtual_mc->xyz[2];
+		_torque_setpoint_1->xyz[1] = _vehicle_torque_setpoint_virtual_mc->xyz[1];
+		_torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_mc->xyz[0];
 	}
+
+
 }
 
 
@@ -338,10 +369,51 @@ bool Tailsitter::isFrontTransitionCompletedBase()
 
 	if (pitch <= pitch_threshold_fw) {
 		if (airspeed_triggers_transition) {
-			transition_to_fw = _airspeed_validated->calibrated_airspeed_m_s >= _param_vt_arsp_trans.get() ;
+			// transition_to_fw = _airspeed_validated->calibrated_airspeed_m_s >= _param_vt_arsp_trans.get();
+
+			// lyu: TODO: modify later
+			if (_local_pos->v_xy_valid) {
+
+				// get the intermediate frame velocity
+				const float yaw = _local_pos->heading;
+				const float v_x = _local_pos->vx;
+				const float v_y = _local_pos->vy;
+
+				// longitudinal velocity and lateral velocity
+				const float v_lon = v_x*cosf(yaw)+v_y*sinf(yaw);
+				// const float v_lat = -v_x*sinf(yaw)+v_y*cosf(yaw);
+
+				// lyu: manually set a velocity
+				if (v_lon > 9.0f) {
+
+					transition_to_fw = true;
+
+				}
+			}
 
 		} else {
-			transition_to_fw = true;
+			// lyu: relative velocity > ?? m/s considering wind speed estimation resuls
+			// 1. check valid: vehicle_local_position v_xy_valid; 2. get the intermediate frame velocity
+			if (_local_pos->v_xy_valid) {
+
+				// get the intermediate frame velocity
+				const float yaw = _local_pos->heading;
+				const float v_x = _local_pos->vx;
+				const float v_y = _local_pos->vy;
+
+				// longitudinal velocity and lateral velocity
+				const float v_lon = v_x*cosf(yaw)+v_y*sinf(yaw);
+				// const float v_lat = -v_x*sinf(yaw)+v_y*cosf(yaw);
+
+				// lyu: manually set a velocity
+				if (v_lon > 10.0f) {
+
+					transition_to_fw = true;
+
+				}
+
+			}
+
 		}
 	}
 

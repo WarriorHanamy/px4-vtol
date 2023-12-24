@@ -2,7 +2,7 @@
 <sdf version="1.10">
   <model name="tailsitter">
     <pose>0 0 0.3 0.0 -1.57096 0.0</pose>
-    <!-- <pose>0 0 0.0 0 1.57 0</pose> -->
+    <!-- <pose>0 0 0.3 0 0 0</pose> -->
     <!-- <pose>0 0 0.3 0 -1.57096 -1.1</pose> -->
     <static>0</static>
 
@@ -11,12 +11,12 @@
         <pose>0 0 0 0 0 0</pose>
         <mass>1.5</mass>
         <inertia>
-          <ixx>0.023609000000000</ixx>
+          <ixx>0.043609000000000</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.004513000000000</iyy>
+          <iyy>0.04513000000000</iyy>
           <iyz>0</iyz>
-          <izz>0.023220000000000</izz>
+          <izz>0.083220000000000</izz>
         </inertia>
       </inertial>
       <collision name="collision">
@@ -244,21 +244,62 @@
           </pressure>
         </air_pressure>
       </sensor>
-    <!-- <link name='imu_link' -->
-
       <sensor
         name="imu_sensor" type="imu">
-        <pose>0 0 0 0 0 0</pose>
-        <!-- <pose>0 0 0 0 0 0</pose> -->
-        <relative_to></relative_to>
+        <pose relative_to="base_link">0 0 0 0 0 0</pose>
         <always_on>1</always_on>
         <update_rate>250</update_rate>
         <visualize>true</visualize>
       </sensor>
     </link>
-    <link name="imu_link">
 
+
+<!-- not work -->
+    <!-- <link name="airspeed_link">
+      <pose relative_to="airspeed_joint">0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.015</mass>
+        <inertia>
+          <ixx>1e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-05</iyy>
+          <iyz>0</iyz>
+          <izz>1e-05</izz>
+        </inertia>
+      </inertial>
+      <visual name="airspeed_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.01</radius>
+            <length>0.1</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0 0 0 1.0</ambient>
+          <diffuse>0 0 0 1.0</diffuse>
+        </material>
+      </visual>
+      <sensor name="air_speed_sensor" type="air_speed">
+        <always_on>1</always_on>
+        <update_rate>15.0</update_rate>
+        <enable_metrics>true</enable_metrics>
+        <air_speed>
+          <airspeed>
+            <noise type="gaussian">
+              <mean>0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </airspeed>
+        </air_speed>
+      </sensor>
     </link>
+    <joint name='airspeed_joint' type='fixed'>
+      <pose relative_to="base_link">0 0 0 1.5 0 0</pose>
+      <child>airspeed_link</child>
+      <parent>base_link</parent>
+    </joint> -->
 
 
     <!-- https://ardupilot.org/plane/docs/guide-tailsitter.html#nyt-quad-x-motor-tailsitter -->
@@ -722,10 +763,8 @@
           <upper>1e+16</upper>
         </limit>
         <dynamics>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
+          <damping>0.004</damping>
         </dynamics>
-        <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
 
@@ -802,7 +841,8 @@
       name="gz::sim::systems::JointStatePublisher">
     </plugin>
 
-    <plugin filename="libAerodynamicsPlugin" name="gz::sim::systems::AerodynamicsPlugin">
+<!-- LYU: temp remove aerodynamic -->
+    <!-- <plugin filename="libAerodynamicsPlugin" name="gz::sim::systems::AerodynamicsPlugin">
       <link_name>base_link</link_name>
       <area>0.1955</area>
       <air_density>1.2</air_density>
@@ -810,11 +850,224 @@
       <topic_moment>zhang_moment</topic_moment>
       <if_omit_moment>false</if_omit_moment>
       <if_omit_force>false</if_omit_force>
+    </plugin> -->
+
+<!-- LYU: add control face -->
+    <link name="left_elevon">
+      <inertial>
+        <mass>0.00000001</mass>
+        <inertia>
+          <ixx>0.000001</ixx>
+          <ixy>0.0</ixy>
+          <iyy>0.000001</iyy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+          <izz>0.000001</izz>
+        </inertia>
+        <pose relative_to="base_link">0 0.3 0 0.0 0 0</pose>
+        <!-- <pose>0 0.3 0 0.00 0 0.0</pose> -->
+      </inertial>
+      <visual name='left_elevon_visual'>
+        <pose>-0.21 -0.005 -0.085 1.58 0 2.65</pose>
+        <!-- <pose>-0.105 0.004 -0.034 1.5707963268 0 3.1415926536</pose> -->
+        <geometry>
+          <mesh>
+            <scale>0.001 0.003 0.0005</scale>
+            <uri>model://standard_vtol/meshes/x8_elevon_left.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0 0 1 1.0</ambient>
+          <diffuse>0 0 1 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name="right_elevon">
+      <inertial>
+        <mass>0.00000001</mass>
+        <inertia>
+          <ixx>0.000001</ixx>
+          <ixy>0.0</ixy>
+          <iyy>0.000001</iyy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+          <izz>0.000001</izz>
+        </inertia>
+        <pose relative_to="base_link">0 -0.3 0 0.0 0 0</pose>
+        <!-- <pose>0 -0.3 0 0.00 0 0.0</pose> -->
+      </inertial>
+      <visual name='right_elevon_visual'>
+        <!-- <pose>0.281 -1.032 -0.034 1.5707963268 0 3.1415926536</pose> -->
+        <!-- <pose>-0.20 -0.005 -0.085 1.57 0 2.65</pose> -->
+        <pose>0.38 -0.267 -0.089 1.57 0 -2.65</pose>
+        <geometry>
+          <mesh>
+            <!-- <scale>0.001 0.001 0.001</scale> -->
+            <scale>0.001 0.003 0.0005</scale>
+            <uri>model://standard_vtol/meshes/x8_elevon_right.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0 0 1 1.0</ambient>
+          <diffuse>0 0 1 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name="elevator">
+      <inertial>
+        <mass>0.00000001</mass>
+        <inertia>
+          <ixx>0.000001</ixx>
+          <ixy>0.0</ixy>
+          <iyy>0.000001</iyy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+          <izz>0.000001</izz>
+        </inertia>
+        <!-- <pose> -0.5 0 0 0.00 0 0.0 </pose> -->
+        <pose relative_to="base_link">-0.5 0 0 0.00 0 0.0</pose>
+      </inertial>
+    </link>
+    <joint name='servo_0' type='revolute'>
+      <parent>base_link</parent>
+      <child>left_elevon</child>
+      <!-- <pose>-0.18 0.6 -0.005 0 0 0.265</pose> -->
+      <!-- <pose>-0.12 0.6 0 0 0 0</pose> -->
+      <pose relative_to="base_link">-0.12 0.6 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.53</lower>
+          <upper>0.53</upper>
+        </limit>
+        <dynamics>
+          <damping>1.000</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <implicit_spring_damper>1</implicit_spring_damper>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='servo_1' type='revolute'>
+      <parent>base_link</parent>
+      <child>right_elevon</child>
+      <!-- <pose>-0.18 -0.6 -0.005 0 0 -0.265</pose> -->
+      <!-- <pose>-0.12 -0.6 0 0 0 0</pose> -->
+      <pose relative_to="base_link">-0.12 -0.6 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.53</lower>
+          <upper>0.53</upper>
+        </limit>
+        <dynamics>
+          <damping>1.000</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <implicit_spring_damper>1</implicit_spring_damper>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='servo_2' type='revolute'>
+      <parent>base_link</parent>
+      <child>elevator</child>
+      <pose> -0.5 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <!-- -30/+30 deg. -->
+          <lower>-0.53</lower>
+          <upper>0.53</upper>
+        </limit>
+        <dynamics>
+          <damping>1.000</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <implicit_spring_damper>1</implicit_spring_damper>
+        </ode>
+      </physics>
+    </joint>
+
+
+<!-- LYU：add lift drag for test  -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.05984281113</a0>
+      <cla>4.752798721</cla>
+      <cda>0.6417112299</cda>
+      <cma>0.0</cma>
+      <alpha_stall>0.3391428111</alpha_stall>
+      <cla_stall>-3.85</cla_stall>
+      <cda_stall>-0.9233984055</cda_stall>
+      <cma_stall>0</cma_stall>
+      <cp>-0.05 0.3 0.05</cp>
+      <area>0.50</area>
+      <air_density>1.2041</air_density>
+      <forward>1 0 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+      <control_joint_name>servo_0</control_joint_name>
+      <control_joint_rad_to_cl>-1.0</control_joint_rad_to_cl>
+    </plugin>
+    <plugin
+      filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>servo_0</joint_name>
+      <sub_topic>servo_0</sub_topic>
     </plugin>
 
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.05984281113</a0>
+      <cla>4.752798721</cla>
+      <cda>0.6417112299</cda>
+      <cma>0.0</cma>
+      <alpha_stall>0.3391428111</alpha_stall>
+      <cla_stall>-3.85</cla_stall>
+      <cda_stall>-0.9233984055</cda_stall>
+      <cma_stall>0</cma_stall>
+      <cp>-0.05 -0.3 0.05</cp>
+      <area>0.50</area>
+      <air_density>1.2041</air_density>
+      <forward>1 0 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+      <control_joint_name>servo_1</control_joint_name>
+      <control_joint_rad_to_cl>-1.0</control_joint_rad_to_cl>
+    </plugin>
+    <plugin
+      filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>servo_1</joint_name>
+      <sub_topic>servo_1</sub_topic>
+    </plugin>
 
-
-
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>-0.2</a0>
+      <cla>4.752798721</cla>
+      <cda>0.6417112299</cda>
+      <cma>0.0</cma>
+      <alpha_stall>0.3391428111</alpha_stall>
+      <cla_stall>-3.85</cla_stall>
+      <cda_stall>-0.9233984055</cda_stall>
+      <cma_stall>0</cma_stall>
+      <cp>-0.5 0 0</cp>
+      <area>0.01</area>
+      <air_density>1.2041</air_density>
+      <forward>1 0 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+      <control_joint_name>servo_2</control_joint_name>
+          <control_joint_name>servo_2</control_joint_name>
+      <control_joint_rad_to_cl>-12.0</control_joint_rad_to_cl>
+    </plugin>
+    <plugin
+      filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>servo_2</joint_name>
+      <sub_topic>servo_2</sub_topic>
+    </plugin>
 
   </model>
 </sdf>

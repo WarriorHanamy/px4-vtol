@@ -135,9 +135,20 @@ void SensorAirspeedSim::Run()
 			const float air_density = AIR_DENSITY_MSL / density_ratio;
 
 			// calculate differential pressure + noise in hPa
+			// LYU: TODO: modify here, add the rotation only for HI LAB tailsitter
+			// const float roll = _arsp_roll.get();
+			// const float pitch = _arsp_pitch.get();
+			// const float yaw = _arsp_yaw.get();
+
+			float diff_pressure = 0.0f;
 			const float diff_pressure_noise = (float)generate_wgn() * 0.01f;
-			float diff_pressure = sign(body_velocity(0)) * 0.005f * air_density  * body_velocity(0) * body_velocity(
+
+			if (_arspd_rot.get() == 1) {
+			        diff_pressure = 0.005f * air_density  * body_velocity(2) * body_velocity(2) + diff_pressure_noise;
+			} else {
+			        diff_pressure = sign(body_velocity(0)) * 0.005f * air_density  * body_velocity(0) * body_velocity(
 						      0) + diff_pressure_noise;
+			}
 
 
 			differential_pressure_s differential_pressure{};

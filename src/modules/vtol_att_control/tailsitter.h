@@ -49,7 +49,8 @@
 #include <matrix/matrix/math.hpp>
 
 // [rad] Pitch threshold required for completing transition to fixed-wing in automatic transitions
-static constexpr float PITCH_THRESHOLD_AUTO_TRANSITION_TO_FW = -1.05f; // -60°
+// static constexpr float PITCH_THRESHOLD_AUTO_TRANSITION_TO_FW = -1.05f; // -60°
+static constexpr float PITCH_THRESHOLD_AUTO_TRANSITION_TO_FW = -1.4f; // -60°
 
 // [rad] Pitch threshold required for completing transition to hover in automatic transitions
 static constexpr float PITCH_THRESHOLD_AUTO_TRANSITION_TO_MC = -0.26f; // -15°
@@ -70,7 +71,7 @@ public:
 private:
 	enum class vtol_mode {
 		MC_MODE = 0,			/**< vtol is in multicopter mode */
-		TRANSITION_FRONT_P1,	/**< vtol is in front transition part 1 mode */
+		TRANSITION_FRONT_P1,		/**< vtol is in front transition part 1 mode */
 		TRANSITION_BACK,		/**< vtol is in back transition mode */
 		FW_MODE					/**< vtol is in fixed wing mode */
 	};

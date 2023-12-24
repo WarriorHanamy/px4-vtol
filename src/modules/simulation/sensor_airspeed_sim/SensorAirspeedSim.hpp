@@ -90,6 +90,10 @@ private:
 	perf_counter_t _loop_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle")};
 
 	DEFINE_PARAMETERS(
-		(ParamInt<px4::params::SIM_ARSPD_FAIL>) _sim_failure
+		(ParamInt<px4::params::SIM_ARSPD_FAIL>) _sim_failure,
+		(ParamInt<px4::params::HILAB_ARSPDROT>) _arspd_rot,
+		(ParamFloat<px4::params::SIM_ARSP_ROT_R>) _arsp_roll,
+		(ParamFloat<px4::params::SIM_ARSP_ROT_P>) _arsp_pitch,
+		(ParamFloat<px4::params::SIM_ARSP_ROT_Y>) _arsp_yaw
 	)
 };

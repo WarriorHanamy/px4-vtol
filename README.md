@@ -5,7 +5,7 @@
 
 ## ROS1-user
 - You may as well disable the module thrust_acc_control owing to the publication of VehicleRatesSetpoint of this module.
-In the file <PX4-root>/ROMFS/init.d/rc.mc_apps, please comment this line
+In the file <PX4-root>/ROMFS/init.d/rc.mc_apps  AND <PX4-root>/ROMFS/init.d/rc.vtol_apps, please comment this line
 ```shell
 thrust_acc_control start
 ```

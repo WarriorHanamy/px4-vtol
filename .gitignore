@@ -112,3 +112,4 @@ log/
 
 # debug
 *copy*
+.vscode/

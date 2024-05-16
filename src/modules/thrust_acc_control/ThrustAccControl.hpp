@@ -125,8 +125,8 @@ private:
 	matrix::Quaternionf _rotate_q{};
 	float _thr_p;
 
-	// we assumes the model of thrust is quadratic, i.e. a_t = a*u^2 + b*u
-	float _thr_cur_a, _thr_cur_b;
+	// we assumes the model of thrust is quadratic, i.e. a_t = a*u
+	float _thr_lin_k;
 
 	float _timeout_acc = 9.9;
 	uint64_t _timeout_time = 0;
@@ -134,8 +134,7 @@ private:
 
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::THR_P>) _param_thr_p,
-		(ParamFloat<px4::params::THR_CUR_QDRTC_A>) _param_thr_curve_a,
-		(ParamFloat<px4::params::THR_CUR_QDRTC_B>) _param_thr_curve_b,
+		(ParamFloat<px4::params::THR_CUR_LIN_K>) _param_thr_lin_k,
 		(ParamFloat<px4::params::THR_TMO_ACC>) _param_thr_timeout_acc,
 		(ParamInt<px4::params::THR_TMO_TIME>) _param_sys_timeout_time  /**< example parameter */
 	)

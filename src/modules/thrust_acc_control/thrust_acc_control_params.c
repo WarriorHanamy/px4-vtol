@@ -63,21 +63,10 @@ PARAM_DEFINE_FLOAT(THR_P, 0.0588f);
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(THR_CUR_QDRTC_A, 11.019786910197855f);
+PARAM_DEFINE_FLOAT(THR_CUR_LIN_K, 13.459515421593224f);
 
 
-/**
- * thrust curve over-confident SLOPE
- *
- * [at_sp - hat(at)] * K * (P+I*1/s+D*s) + thrust_ff = Thrust_setpoint
- *
- * @min 0.0
- * @max 50.0
- * @decimal 3
- * @increment 0.01
- * @group Multicopter Rate Control
- */
-PARAM_DEFINE_FLOAT(THR_CUR_QDRTC_B, 5.380213089802145f);
+
 
 
 

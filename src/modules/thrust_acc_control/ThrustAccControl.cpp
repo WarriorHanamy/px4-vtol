@@ -81,8 +81,7 @@ ThrustAccControl::parameters_updated()
 	// to the ideal (K * [1 + 1/sTi + sTd]) form
 	// const Vector3f rate_k = Vector3f(_param_thr_p.get(), 0., 0.);
 	_thr_p = _param_thr_p.get();
-	_thr_cur_a = _param_thr_curve_a.get();
-	_thr_cur_b = _param_thr_curve_b.get();
+	_thr_lin_k = _param_thr_lin_k.get();
 	_timeout_acc = _param_thr_timeout_acc.get();
 	_timeout_time = _param_sys_timeout_time.get() * 1e5;
 
@@ -91,7 +90,7 @@ ThrustAccControl::parameters_updated()
 
 float ThrustAccControl::get_u_inverse_model(float target_at) {
 	// TODO check max and min
-	return (-_thr_cur_b + sqrtf(_thr_cur_b * _thr_cur_b - 4 * _thr_cur_a * (-target_at))) / (2 * _thr_cur_a);
+	return target_at / _thr_lin_k;
 }
 
 

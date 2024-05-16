@@ -123,15 +123,15 @@ void ThrustAccControl::Run() {
       _rates_setpoint =
           matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
       // print vehicle_thrust_acc
-      if (_last_run && hrt_absolute_time() - _last_run > _timeout_time) {
-        PX4_WARN(
-            "Haven't Received Thrust Acc Setpoint Messages! Restored to Hold "
-            "mode");
-        _thrust_acc_sp = _timeout_acc;
-        _rates_setpoint(0) = 0.0;
-        _rates_setpoint(1) = 0.0;
-        _rates_setpoint(2) = 0.0;
-      }
+      // if (_last_run && hrt_absolute_time() - _last_run > _timeout_time) {
+      //   PX4_WARN(
+      //       "Haven't Received Thrust Acc Setpoint Messages! Restored to Hold "
+      //       "mode");
+      //   _thrust_acc_sp = _timeout_acc;
+      //   _rates_setpoint(0) = 0.0;
+      //   _rates_setpoint(1) = 0.0;
+      //   _rates_setpoint(2) = 0.0;
+      // }
 
       // _thrust_acc_setpoint_msg.timestamp
       // if(_thrust_acc_sp.timestamp)

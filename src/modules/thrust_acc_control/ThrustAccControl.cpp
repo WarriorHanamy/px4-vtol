@@ -129,7 +129,6 @@ void ThrustAccControl::Run() {
         PX4_WARN(
             "Haven't Received Thrust Acc Setpoint Messages! Restored to Hold "
             "mode");
-        PX4_WARN("Timestamp: %ld", (int64_t)(hrt_absolute_time()));
         _thrust_acc_sp = _timeout_acc;
         _rates_setpoint(0) = 0.0;
         _rates_setpoint(1) = 0.0;

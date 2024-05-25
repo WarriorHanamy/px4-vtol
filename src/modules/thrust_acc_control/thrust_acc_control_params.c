@@ -43,27 +43,40 @@
  *
  * [at_sp - hat(at)] * K * (P+I*1/s+D*s) + thrust_ff = Thrust_setpoint
  *
+ * @min 0.001
+ * @max 0.008
+ * @decimal 3
+ * @increment 0.01
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(THR_P, 0.005f);
+
+
+/**
+ * thrust setpoint low pass filter cutoff frequency 
+ *
+ * thrust setpoint low pass filter cutoff frequency 
+ *
  * @min 0.00
  * @max 100.0
  * @decimal 3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(THR_P, 0.0188f);
-
+PARAM_DEFINE_FLOAT(THR_LPF_CUTOFF, 50.0f);
 
 /**
  * thrust curve over-confident SLOPE
  *
  * [at_sp - hat(at)] * K * (P+I*1/s+D*s) + thrust_ff = Thrust_setpoint
  *
- * @min 0.0
- * @max 50.0
+ * @min 20.0
+ * @max 200.0
  * @decimal 3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(THR_CUR_LIN_K, 13.459515421593224f);
+PARAM_DEFINE_FLOAT(THR_CUR_LIN_K, 150.0f);
 
 
 

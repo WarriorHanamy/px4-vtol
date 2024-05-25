@@ -95,6 +95,7 @@ private:
   uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
   uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
   uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
+//   uORB::SubscriptionData<
   uORB::SubscriptionData<sensor_gyro_s> _acc_b_sub{ORB_ID(sensor_gyro)};
   uORB::SubscriptionData<vehicle_acceleration_s> _vacc_sub{
       ORB_ID(vehicle_acceleration)};
@@ -123,6 +124,10 @@ private:
   // keep setpoint values between updates
   matrix::Vector3f _rates_setpoint{};
   vehicle_thrust_acc_setpoint_s _thrust_acc_setpoint_msg;
+  math::LowPassFilter2p<float> _thrust_sp_lpf{};
+  float _u_prev = 0.0;
+  float _u = 0.0;
+  float _a_curr;
   float _thrust_acc_sp{};
   matrix::Quaternionf _rotate_q{};
   float _thr_p;
@@ -132,13 +137,15 @@ private:
 
   float _timeout_acc = 9.6;
   uint64_t _timeout_time = 0;
-  ButterworthFilter2nd _lpf;
+//   ButterworthFilter2nd _thrust_splpf;
 
   DEFINE_PARAMETERS((ParamFloat<px4::params::THR_P>)_param_thr_p,
                     (ParamFloat<px4::params::THR_CUR_LIN_K>)_param_thr_lin_k,
                     (ParamFloat<px4::params::THR_TMO_ACC>)
                         _param_thr_timeout_acc,
+                    (ParamFloat<px4::params::GYROX_CUTOFF>) _param_imu_gyro_cutoff,
+                    (ParamFloat<px4::params::THR_LPF_CUTOFF>) _param_thr_lpf_cutoff_frq,
                     (ParamInt<px4::params::THR_TMO_TIME>)
-                        _param_sys_timeout_time /**< example parameter */
+                        _param_sys_timeout_time 
   )
 };

@@ -63,7 +63,11 @@ bool ThrustAccControl::init() {
 }
 
 void ThrustAccControl::resetButterworthFilter() {
-  _lpf.initButterSysLowpass(0, 0, 10, 250);
+  // _lpf.initButterSysLowpass(0, 0, 10, 250);
+  _thrust_sp_lpf.set_cutoff_frequency(_param_imu_gyro_cutoff.get(),
+                                      _param_thr_lpf_cutoff_frq.get());
+  
+  _thrust_sp_lpf.reset(0.00f);
 }
 
 void ThrustAccControl::parameters_updated() {
@@ -75,6 +79,7 @@ void ThrustAccControl::parameters_updated() {
   _thr_lin_k = _param_thr_lin_k.get();
   _timeout_acc = _param_thr_timeout_acc.get();
   _timeout_time = _param_sys_timeout_time.get() * 1e5;
+  resetButterworthFilter();
 }
 
 float ThrustAccControl::get_u_inverse_model(float target_at) {
@@ -110,52 +115,36 @@ void ThrustAccControl::Run() {
   }
   /* run controller on gyro changes */
   // vehicle_angular_velocity_s linear_acc_b;
-  resetButterworthFilter();
   // Accordiing sensor gyro
   if (_vehicle_angular_velocity_sub.updated()) {
     _vehicle_control_mode_sub.update(&_vehicle_control_mode);
     // // must enable thrust_acc_control to allow it control VehicleThrust
+    _vehicle_thrust_acc_setpoint_sub.update();
+    _vacc_sub.update();
     if (_vehicle_control_mode.flag_control_offboard_enabled &&_vehicle_control_mode.flag_control_rates_enabled) {
-      _vehicle_thrust_acc_setpoint_sub.update();
 
       _last_run = _vehicle_thrust_acc_setpoint_sub.get().timestamp;
       _thrust_acc_sp = _vehicle_thrust_acc_setpoint_sub.get().thrust_acc_sp;
       _rates_setpoint =
           matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
-      // print vehicle_thrust_acc
-      if (_last_run && hrt_absolute_time() - _last_run > _timeout_time) {
-        // PX4_WARN(
-        //     "Haven't Received Thrust Acc Setpoint Messages! Restored to Hold "
-        //     "mode");
-        _thrust_acc_sp = _timeout_acc;
-        // TODO change it to hold rates
-        _rates_setpoint(0) = 0.0;
-        _rates_setpoint(1) = 0.0;
-        _rates_setpoint(2) = 0.0;
-      }
 
-      // _thrust_acc_setpoint_msg.timestamp
-      // if(_thrust_acc_sp.timestamp)
-      float normalized_u = get_u_inverse_model(_thrust_acc_sp);
-
-      // adding P controller
-      _vacc_sub.update();
       // change to FLU setting
-      float acc_body_z = -_vacc_sub.get().xyz[2];
-      normalized_u += (_thrust_acc_sp - acc_body_z) * _thr_p;
-      normalized_u = math::constrain<float>(normalized_u, 0.0, 1.0);
-      // 	// mavlink_log_critical(&_mavlink_log_pub, "in thrust_acc
-      // mode"); _vehicle_thrust_acc_setpoint_sub.update();
-      // // vehicle_thrust_acc_setpoint_s tmp =
-      // _vehicle_thrust_acc_setpoint_sub.get();
+      _a_curr = -_vacc_sub.get().xyz[2];
+      _u = (_thrust_acc_sp - _a_curr) * _thr_p + _u_prev;
+      _u = _thrust_sp_lpf.apply(_u);
+      _u = math::constrain<float>(_u, 0.0, 1.0);
+      _u_prev = _u;
       vehicle_rates_setpoint_s vehicle_rates_setpoint{};
-
-      vehicle_rates_setpoint.thrust_body[2] = -normalized_u;
+      vehicle_rates_setpoint.thrust_body[2] = -_u;
       vehicle_rates_setpoint.roll = _rates_setpoint(0);
       vehicle_rates_setpoint.pitch = _rates_setpoint(1);
       vehicle_rates_setpoint.yaw = _rates_setpoint(2);
       vehicle_rates_setpoint.timestamp = hrt_absolute_time();
       _vehicle_rates_setpoint_pub.publish(vehicle_rates_setpoint);
+    }
+    else {
+      resetButterworthFilter();
+      _u_prev = 0.0f;
     }
     // use rates setpoint topic
 

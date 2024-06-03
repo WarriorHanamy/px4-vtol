@@ -34,19 +34,12 @@
 #pragma once
 
 #include <lib/adv_control_lib/butterworth_filter.h>
-#include <lib/matrix/matrix/math.hpp>
 #include <lib/perf/perf_counter.h>
-#include <lib/rate_control/rate_control.hpp>
 #include <lib/systemlib/mavlink_log.h>
 #include <px4_platform_common/defines.h>
 #include <px4_platform_common/module.h>
 #include <px4_platform_common/module_params.h>
 #include <px4_platform_common/posix.h>
-#include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
-#include <uORB/Publication.hpp>
-#include <uORB/PublicationMulti.hpp>
-#include <uORB/Subscription.hpp>
-#include <uORB/SubscriptionCallback.hpp>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/rate_ctrl_status.h>
 #include <uORB/topics/sensor_gyro.h>
@@ -57,6 +50,14 @@
 #include <uORB/topics/vehicle_rates_setpoint.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
+
+#include <lib/matrix/matrix/math.hpp>
+#include <lib/rate_control/rate_control.hpp>
+#include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
+#include <uORB/Publication.hpp>
+#include <uORB/PublicationMulti.hpp>
+#include <uORB/Subscription.hpp>
+#include <uORB/SubscriptionCallback.hpp>
 // #include <uORB/topics/vehicle_
 // #include <uORB/topics/vehithrus
 #include <uORB/topics/vehicle_thrust_acc_setpoint.h>
@@ -66,7 +67,7 @@ using namespace time_literals;
 class ThrustAccControl : public ModuleBase<ThrustAccControl>,
                          public ModuleParams,
                          public px4::WorkItem {
-public:
+ public:
   ThrustAccControl();
   ~ThrustAccControl() override;
 
@@ -81,7 +82,7 @@ public:
 
   bool init();
 
-private:
+ private:
   void Run() override;
   void resetButterworthFilter();
   /**
@@ -96,22 +97,22 @@ private:
   uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
   uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
   uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
-//   uORB::SubscriptionData<
+  //   uORB::SubscriptionData<
   uORB::SubscriptionData<sensor_gyro_s> _acc_b_sub{ORB_ID(sensor_gyro)};
   uORB::SubscriptionData<vehicle_acceleration_s> _vacc_sub{
       ORB_ID(vehicle_acceleration)};
 
   uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update),
                                                    1_s};
-  uORB::SubscriptionData<vehicle_thrust_setpoint_s> _vehicle_thrust_setpoint_sub{
-      ORB_ID(vehicle_thrust_setpoint)};
+  uORB::SubscriptionData<vehicle_thrust_setpoint_s>
+      _vehicle_thrust_setpoint_sub{ORB_ID(vehicle_thrust_setpoint)};
   uORB::SubscriptionCallbackWorkItem _vehicle_angular_velocity_sub{
       this, ORB_ID(vehicle_angular_velocity)};
 
   uORB::Publication<vehicle_rates_setpoint_s> _vehicle_rates_setpoint_pub{
       ORB_ID(vehicle_rates_setpoint)};
 
-  orb_advert_t _mavlink_log_pub{nullptr}; ///< mavlink log pub
+  orb_advert_t _mavlink_log_pub{nullptr};  ///< mavlink log pub
 
   RateControl _rate_control;
 
@@ -139,15 +140,13 @@ private:
 
   float _timeout_acc = 9.6;
   uint64_t _timeout_time = 0;
-//   ButterworthFilter2nd _thrust_splpf;
+  //   ButterworthFilter2nd _thrust_splpf;
 
-  DEFINE_PARAMETERS((ParamFloat<px4::params::THR_P>)_param_thr_p,
-                    (ParamFloat<px4::params::THR_CUR_LIN_K>)_param_thr_lin_k,
-                    (ParamFloat<px4::params::THR_TMO_ACC>)
-                        _param_thr_timeout_acc,
-                    (ParamFloat<px4::params::GYROX_CUTOFF>) _param_imu_gyro_cutoff,
-                    (ParamFloat<px4::params::THR_LPF_CUTOFF>) _param_thr_lpf_cutoff_frq,
-                    (ParamInt<px4::params::THR_TMO_TIME>)
-                        _param_sys_timeout_time 
-  )
+  DEFINE_PARAMETERS(
+      (ParamFloat<px4::params::THR_P>)_param_thr_p,
+      (ParamFloat<px4::params::THR_TMO_ACC>)_param_thr_timeout_acc,
+      (ParamFloat<px4::params::GYROX_CUTOFF>)_param_imu_gyro_cutoff,
+      (ParamFloat<px4::params::THR_LIN_K>)_param_thr_lin_k,
+      (ParamFloat<px4::params::THR_LPF_CUTOFF>)_param_thr_lpf_cutoff_frq,
+      (ParamInt<px4::params::THR_TMO_TIME>)_param_sys_timeout_time)
 };

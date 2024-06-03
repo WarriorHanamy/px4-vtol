@@ -66,7 +66,7 @@ void ThrustAccControl::resetButterworthFilter() {
   // _lpf.initButterSysLowpass(0, 0, 10, 250);
   _thrust_sp_lpf.set_cutoff_frequency(_param_imu_gyro_cutoff.get(),
                                       _param_thr_lpf_cutoff_frq.get());
-  
+
   _thrust_sp_lpf.reset(_u_prev);
 }
 
@@ -122,19 +122,21 @@ void ThrustAccControl::Run() {
     // // must enable thrust_acc_control to allow it control VehicleThrust
     _vehicle_thrust_acc_setpoint_sub.update();
     _vacc_sub.update();
-    if (_vehicle_control_mode.flag_control_offboard_enabled &&_vehicle_control_mode.flag_control_rates_enabled) {
-
+    if (_vehicle_control_mode.flag_control_offboard_enabled &&
+        _vehicle_control_mode.flag_control_rates_enabled) {
       _last_run = _vehicle_thrust_acc_setpoint_sub.get().timestamp;
       _thrust_acc_sp = _vehicle_thrust_acc_setpoint_sub.get().thrust_acc_sp;
       _rates_setpoint =
           matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
+      _u_prev = -_vehicle_thrust_setpoint_sub.get().xyz[2];
 
       // change to FLU setting
       _a_curr = -_vacc_sub.get().xyz[2];
-      _u = (_thrust_acc_sp - _a_curr) * _thr_p + _u_prev;
+      float _du = (_thrust_acc_sp - _a_curr) * _thr_p;
+      math::constrain(_du, -_thr_lin_k, +_thr_lin_k);
+      _u = _du + _u_prev;
       _u = _thrust_sp_lpf.apply(_u);
       _u = math::constrain<float>(_u, 0.0, 1.0);
-      _u_prev = - _vehicle_thrust_setpoint_sub.get().xyz[2]; 
       vehicle_rates_setpoint_s vehicle_rates_setpoint{};
       vehicle_rates_setpoint.thrust_body[2] = -_u;
       vehicle_rates_setpoint.roll = _rates_setpoint(0);
@@ -142,11 +144,19 @@ void ThrustAccControl::Run() {
       vehicle_rates_setpoint.yaw = _rates_setpoint(2);
       vehicle_rates_setpoint.timestamp = hrt_absolute_time();
       _vehicle_rates_setpoint_pub.publish(vehicle_rates_setpoint);
-    }
-    else {
-      _u_prev = - _vehicle_thrust_setpoint_sub.get().xyz[2]; 
+    } else {
+      _u_prev = -_vehicle_thrust_setpoint_sub.get().xyz[2];
+      _u = _u_prev;
+      vehicle_rates_setpoint_s vehicle_rates_setpoint{};
+      vehicle_rates_setpoint.thrust_body[2] = -_u;
+      vehicle_rates_setpoint.roll = 0;
+      vehicle_rates_setpoint.pitch = 0;
+      vehicle_rates_setpoint.yaw = 0;
+      vehicle_rates_setpoint.timestamp = hrt_absolute_time();
+      _vehicle_rates_setpoint_pub.publish(vehicle_rates_setpoint);
       resetButterworthFilter();
     }
+
     // use rates setpoint topic
 
     // mavlink_log_info(&_mavlink_log_pub, "%f",

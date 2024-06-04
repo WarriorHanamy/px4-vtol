@@ -92,6 +92,19 @@ PARAM_DEFINE_FLOAT(THR_CUR_LIN_K, 150.0f);
 PARAM_DEFINE_FLOAT(THR_LIN_K, 0.005f);
 
 
+/**
+ * acc-thrust model
+ *
+ * a_p = a_cur + beta * delta_u
+ *
+ * @min 0.0
+ * @max 0.01
+ * @decimal 3
+ * @increment 0.001
+ * @group Multicopter Rate Control
+ */
+PARAM_DEFINE_FLOAT(THR_BETA, 0.005f);
+
 
 
 /**

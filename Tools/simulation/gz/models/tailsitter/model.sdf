@@ -842,7 +842,7 @@
     </plugin>
 
 <!-- LYU: temp remove aerodynamic -->
-    <!-- <plugin filename="libAerodynamicsPlugin" name="gz::sim::systems::AerodynamicsPlugin">
+    <plugin filename="libAerodynamicsPlugin" name="gz::sim::systems::AerodynamicsPlugin">
       <link_name>base_link</link_name>
       <area>0.1955</area>
       <air_density>1.2</air_density>
@@ -850,7 +850,7 @@
       <topic_moment>zhang_moment</topic_moment>
       <if_omit_moment>false</if_omit_moment>
       <if_omit_force>false</if_omit_force>
-    </plugin> -->
+    </plugin>
 
 <!-- LYU: add control face -->
     <link name="left_elevon">

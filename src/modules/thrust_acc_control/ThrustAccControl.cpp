@@ -76,7 +76,7 @@ void ThrustAccControl::parameters_updated() {
   // to the ideal (K * [1 + 1/sTi + sTd]) form
   // const Vector3f rate_k = Vector3f(_param_thr_p.get(), 0., 0.);
   _thr_p = _param_thr_p.get();
-  _thr_lin_k = _param_thr_lin_k.get();
+  _delta_thr_bound = _param_delta_thr_bound.get();
   _timeout_acc = _param_thr_timeout_acc.get();
   _timeout_time = _param_sys_timeout_time.get() * 1e5;
   resetButterworthFilter();
@@ -84,7 +84,7 @@ void ThrustAccControl::parameters_updated() {
 
 float ThrustAccControl::get_u_inverse_model(float target_at) {
   // TODO check max and min
-  return target_at / _thr_lin_k;
+  return target_at / _delta_thr_bound;
 }
 
 void ThrustAccControl::Run() {
@@ -133,7 +133,7 @@ void ThrustAccControl::Run() {
       // change to FLU setting
       _a_curr = -_vacc_sub.get().xyz[2];
       float _du = (_thrust_acc_sp - _a_curr) * _thr_p;
-      math::constrain(_du, -_thr_lin_k, +_thr_lin_k);
+      math::constrain(_du, -_delta_thr_bound, +_delta_thr_bound);
       _u = _du + _u_prev;
       _u = _thrust_sp_lpf.apply(_u);
       _u = math::constrain<float>(_u, 0.0, 1.0);

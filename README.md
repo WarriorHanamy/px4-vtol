@@ -1,3 +1,42 @@
+# uORB checker
+```shell
+cd $PX4ROOT
+grep -rn "uORB::Publication<vehicle_local_position_s>" .
+grep -rn "uORB::SubscriptionData<vehicle_thrust_acc_setpoint_s>" .
+grep -rn "uORB::Subscription<vehicle_thrust_acc_setpoint_s>" .
+grep -rn "uORB::PublicationMulti<vehicle_thrust_acc_setpoint_s>" .
+```
+-r recursive 
+-n display numbers
+
+## advertise
+	// ==== uORB interface methods ====
+	/**
+	 * Advertise as the publisher of a topic.
+	 *
+	 * This performs the initial advertisement of a topic; it creates the topic
+	 * node in /obj if required and publishes the initial data.
+	 *
+	 * Any number of advertisers may publish to a topic; publications are atomic
+	 * but co-ordination between publishers is not provided by the ORB.
+	 *
+	 * Internally this will call orb_advertise_multi with an instance of 0.
+	 *
+	 * @param meta    The uORB metadata (usually from the ORB_ID() macro)
+	 *      for the topic.
+	 * @param data    A pointer to the initial data to be published.
+	 *      For topics updated by interrupt handlers, the advertisement
+	 *      must be performed from non-interrupt context.
+	 * @param queue_size  Maximum number of buffered elements. If this is 1, no queuing is
+	 *      used.
+	 * @return    nullptr on error, otherwise returns an object pointer
+	 *      that can be used to publish to the topic.
+	 *      If the topic in question is not known (due to an
+	 *      ORB_DEFINE with no corresponding ORB_DECLARE)
+	 *      this function will return nullptr and set errno to ENOENT.
+	 */
+
+
 # WARNING
 - You should first configure your ssh keys for git and github!
 - It might be helpful to add proxy to git even if you have system proxy.

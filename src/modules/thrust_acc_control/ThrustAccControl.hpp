@@ -136,7 +136,7 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
   float _thr_p;
 
   // we assumes the model of thrust is quadratic, i.e. a_t = a*u
-  float _thr_lin_k;
+  float _delta_thr_bound;
 
   float _timeout_acc = 9.6;
   uint64_t _timeout_time = 0;
@@ -146,7 +146,7 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
       (ParamFloat<px4::params::THR_P>)_param_thr_p,
       (ParamFloat<px4::params::THR_TMO_ACC>)_param_thr_timeout_acc,
       (ParamFloat<px4::params::GYROX_CUTOFF>)_param_imu_gyro_cutoff,
-      (ParamFloat<px4::params::THR_LIN_K>)_param_thr_lin_k,
+      (ParamFloat<px4::params::THR_DELTA_BOUND>)_param_delta_thr_bound,
       (ParamFloat<px4::params::THR_LPF_CUTOFF>)_param_thr_lpf_cutoff_frq,
       (ParamInt<px4::params::THR_TMO_TIME>)_param_sys_timeout_time)
 };

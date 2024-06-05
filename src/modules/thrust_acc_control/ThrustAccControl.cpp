@@ -80,6 +80,7 @@ void ThrustAccControl::parameters_updated() {
   _timeout_acc = _param_thr_timeout_acc.get();
   _timeout_time = _param_sys_timeout_time.get() * 1e5;
   _is_sim = _param_thr_sim.get();
+  _beta = _param_beta.get();
   resetButterworthFilter();
 }
 
@@ -128,7 +129,7 @@ void ThrustAccControl::Run() {
   // IMPORTANT
   _vehicle_thrust_acc_setpoint_sub.update();
   _vehicle_thrust_setpoint_sub.update();
-  float last_thrust_sp = 0.0;
+  // float last_thrust_sp = 0.0;
   if (_vehicle_angular_velocity_sub.updated()) {
     _vehicle_control_mode_sub.update(&_vehicle_control_mode);
     // // must enable thrust_acc_control to allow it control VehicleThrust
@@ -141,7 +142,7 @@ void ThrustAccControl::Run() {
       if (hrt_elapsed_time(&_last_run) > _timeout_time) {
         _thrust_acc_sp = _timeout_acc;
       }
-      _thr_model_ff = get_u_inverse_model(_thrust_acc_sp);
+      _thr_model_ff = _vehicle_thrust_acc_setpoint_sub.get().model_ff;
 
       _rates_setpoint =
           matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
@@ -153,21 +154,19 @@ void ThrustAccControl::Run() {
       math::constrain(_du, -_delta_thr_bound, +_delta_thr_bound);
       _u = _du + _u_prev;
 
-      float p_gain = 0.00;
-      _u = (1 - p_gain) * _u + p_gain * _thr_model_ff;
-      if (_thrust_acc_sp - last_thrust_sp > 0) {
-        if (_a_curr < _thrust_acc_sp + (float)(.3 * 1e-1)) {
-          _u += (float)(0.001);
-        }
-      } else if (_thrust_acc_sp - last_thrust_sp < 0) {
-        _u -= _u;
-      } else {
-        _u = _u;
-      }
-      last_thrust_sp = _thrust_acc_sp;
+      // if (_thrust_acc_sp - last_thrust_sp > 0) {
+      //   if (_a_curr < _thrust_acc_sp + (float)(.3 * 1e-1)) {
+      //     _u += (float)(0.0005);
+      //   }
+      // } else if (_thrust_acc_sp - last_thrust_sp < 0) {
+      //   _u -= _u;
+      // } else {
+      //   _u = _u;
+      // }
+      // last_thrust_sp = _thrust_acc_sp;
 
       // _u = _thrust_sp_lpf.apply(_u);
-
+      _u = (1 - _beta) * _u + _beta * _thr_model_ff;
       _u = math::constrain<float>(_u, 0.0, 1.0);
       vehicle_rates_setpoint_s vehicle_rates_setpoint{};
       vehicle_rates_setpoint.thrust_body[2] = -_u;

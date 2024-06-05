@@ -134,7 +134,7 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
   float _thrust_acc_sp{};
   matrix::Quaternionf _rotate_q{};
   float _thr_p;
-
+  float _beta;
   float _thr_model_ff;
   // we assumes the model of thrust is quadratic, i.e. a_t = a*u
   float _delta_thr_bound;
@@ -150,6 +150,7 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
       (ParamFloat<px4::params::GYROX_CUTOFF>)_param_imu_gyro_cutoff,
       (ParamFloat<px4::params::THR_DELTA_BOUND>)_param_delta_thr_bound,
       (ParamFloat<px4::params::THR_LPF_CUTOFF>)_param_thr_lpf_cutoff_frq,
+      (ParamFloat<px4::params::THR_BETA>)_param_beta,
       (ParamBool<px4::params::THR_SIM>)_param_thr_sim,
       (ParamInt<px4::params::THR_TMO_TIME>)_param_sys_timeout_time)
 };

@@ -61,6 +61,9 @@
 // #include <uORB/topics/vehicle_
 // #include <uORB/topics/vehithrus
 #include <uORB/topics/vehicle_thrust_acc_setpoint.h>
+
+#include <AttitudeControl.hpp>
+
 // #include <uORB/topics/vehilce_thrust_acc_setpoint.h>
 using namespace time_literals;
 
@@ -96,7 +99,8 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
       _vehicle_thrust_acc_setpoint_sub{ORB_ID(vehicle_thrust_acc_setpoint)};
   uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
   uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
-  uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
+  uORB::SubscriptionData<vehicle_attitude_s> _vehicle_attitude_sub{
+      ORB_ID(vehicle_attitude)};
   //   uORB::SubscriptionData<
   uORB::SubscriptionData<sensor_gyro_s> _acc_b_sub{ORB_ID(sensor_gyro)};
   uORB::SubscriptionData<vehicle_acceleration_s> _vacc_sub{
@@ -139,12 +143,22 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
   // we assumes the model of thrust is quadratic, i.e. a_t = a*u
   float _delta_thr_bound;
 
-  float _timeout_acc = 9.5;
-  uint64_t _timeout_time = 0;
+  float _timeout_acc = 9.81;
+  uint64_t _timeout_time = 2;
   //   ButterworthFilter2nd _thrust_splpf;
   bool _is_sim = false;
 
+  AttitudeControl _attitude_control;
+
   DEFINE_PARAMETERS(
+      (ParamFloat<px4::params::MC_ROLL_P>)_param_mc_roll_p,
+      (ParamFloat<px4::params::MC_PITCH_P>)_param_mc_pitch_p,
+      (ParamFloat<px4::params::MC_YAW_P>)_param_mc_yaw_p,
+      (ParamFloat<px4::params::MC_YAW_WEIGHT>)_param_mc_yaw_weight,
+      (ParamFloat<px4::params::MC_ROLLRATE_MAX>)_param_mc_rollrate_max,
+      (ParamFloat<px4::params::MC_PITCHRATE_MAX>)_param_mc_pitchrate_max,
+      (ParamFloat<px4::params::MC_YAWRATE_MAX>)_param_mc_yawrate_max,
+
       (ParamFloat<px4::params::THR_P>)_param_thr_p,
       (ParamFloat<px4::params::THR_TMO_ACC>)_param_thr_timeout_acc,
       (ParamFloat<px4::params::GYROX_CUTOFF>)_param_imu_gyro_cutoff,

@@ -81,6 +81,18 @@ void ThrustAccControl::parameters_updated() {
   _timeout_time = _param_sys_timeout_time.get() * 1e5;
   _is_sim = _param_thr_sim.get();
   _beta = _param_beta.get();
+
+  _attitude_control.setProportionalGain(
+      Vector3f(_param_mc_roll_p.get(), _param_mc_pitch_p.get(),
+               _param_mc_yaw_p.get()),
+      _param_mc_yaw_weight.get());
+
+  // angular rate limits
+  using math::radians;
+  _attitude_control.setRateLimit(
+      Vector3f(radians(_param_mc_rollrate_max.get()),
+               radians(_param_mc_pitchrate_max.get()),
+               radians(_param_mc_yawrate_max.get())));
   resetButterworthFilter();
 }
 
@@ -107,28 +119,11 @@ void ThrustAccControl::Run() {
     updateParams();
     parameters_updated();
   }
-  if (_vehicle_attitude_sub.updated()) {
-    vehicle_attitude_s vehicle_attitude;
-    _vehicle_attitude_sub.update(&vehicle_attitude);
-    matrix::Quaternionf q_now(vehicle_attitude.q[0], vehicle_attitude.q[1],
-                              vehicle_attitude.q[2], vehicle_attitude.q[3]);
-    _rotate_q = q_now.inversed();
-    // _rotate_q.print();
-  }
-  /* run controller on gyro changes */
-  // vehicle_angular_velocity_s linear_acc_b;
-  // Accordiing sensor gyro
-  // if (_vehicle_thrust_acc_setpoint_sub.updated()) {
-  //   _vehicle_thrust_acc_setpoint_sub.update();
-  //   _thrust_acc_sp = _vehicle_thrust_acc_setpoint_sub.get().thrust_acc_sp;
-  //   if (_is_sim) {
-  //     _thr_model_ff = get_u_inverse_model(_thrust_acc_sp);
-  //   }
-  // }
 
   // IMPORTANT
   _vehicle_thrust_acc_setpoint_sub.update();
   _vehicle_thrust_setpoint_sub.update();
+  _vehicle_attitude_sub.update();
   // float last_thrust_sp = 0.0;
   if (_vehicle_angular_velocity_sub.updated()) {
     _vehicle_control_mode_sub.update(&_vehicle_control_mode);
@@ -139,21 +134,33 @@ void ThrustAccControl::Run() {
         _vehicle_control_mode.flag_control_rates_enabled) {
       _last_run = _vehicle_thrust_acc_setpoint_sub.get().timestamp;
       _thrust_acc_sp = _vehicle_thrust_acc_setpoint_sub.get().thrust_acc_sp;
-      if (hrt_elapsed_time(&_last_run) > _timeout_time) {
-        _thrust_acc_sp = _timeout_acc;
-      }
-      _thr_model_ff = _vehicle_thrust_acc_setpoint_sub.get().model_ff;
-
       _rates_setpoint =
           matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
-      _u_prev = -_vehicle_thrust_setpoint_sub.get().xyz[2];
+      _thr_model_ff = _vehicle_thrust_acc_setpoint_sub.get().model_ff;
 
+      if (hrt_elapsed_time(&_last_run) > _timeout_time) {
+        static uint64_t print_counter = 0;
+        if (print_counter % 400 == 0) {
+          print_counter++;
+          PX4_WARN("MPC Timeout");
+        }
+        _thrust_acc_sp = _timeout_acc;
+        // identity setpoint
+        matrix::Quatf q_cur(_vehicle_attitude_sub.get().q);
+        const float yaw = Eulerf(q_cur).psi();
+        matrix::Quatf q_sp = Eulerf(0.0, 0.0, yaw);
+        _attitude_control.setAttitudeSetpoint(q_sp, 0.0);
+        _rates_setpoint = _attitude_control.update(q_cur);
+      }
+
+      _u_prev = -_vehicle_thrust_setpoint_sub.get().xyz[2];
       // change to FLU setting
       _a_curr = -_vacc_sub.get().xyz[2];
       float _du = (_thrust_acc_sp - _a_curr) * _thr_p;
       math::constrain(_du, -_delta_thr_bound, +_delta_thr_bound);
       _u = _du + _u_prev;
 
+      // TODO MPC phase compensation
       // if (_thrust_acc_sp - last_thrust_sp > 0) {
       //   if (_a_curr < _thrust_acc_sp + (float)(.3 * 1e-1)) {
       //     _u += (float)(0.0005);

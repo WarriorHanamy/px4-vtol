@@ -113,12 +113,12 @@ PARAM_DEFINE_FLOAT(THR_BETA, 0.0f);
  * thrust contrl timeout acc when mpc is lost
  *
  * @min 9.0
- * @max 9.7
+ * @max 10.0
  * @decimal 3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(THR_TMO_ACC, 9.5f);
+PARAM_DEFINE_FLOAT(THR_TMO_ACC, 9.81f);
 
 
 

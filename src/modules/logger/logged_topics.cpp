@@ -351,7 +351,7 @@ void LoggedTopics::add_high_rate_topics() {
   add_topic("vehicle_angular_velocity", 10);
   add_topic("vehicle_acceleration", 10);
   add_topic("vehicle_rates_setpoint");
-  add_optional_topic("vehicle_thrust_acc_setpoint");
+  add_topic("vehicle_thrust_acc_setpoint");
   add_optional_topic("vehicle_odometry");
   add_topic("actuator_motors");
   add_topic("vehicle_thrust_setpoint");

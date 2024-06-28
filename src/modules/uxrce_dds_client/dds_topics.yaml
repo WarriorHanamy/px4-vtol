@@ -4,7 +4,6 @@
 #
 #####
 publications:
-
   # - topic: /fmu/out/collision_constraints
   #   type: px4_msgs::msg::CollisionConstraints
 
@@ -54,8 +53,8 @@ publications:
   # - topic: /fmu/out/vehicle_rates_setpoint
   #   type: px4_msgs::msg::VehicleRatesSetpoint
 
-  - topic: /fmu/out/vehicle_torque_setpoint
-    type: px4_msgs::msg::VehicleTorqueSetpoint
+  # - topic: /fmu/out/vehicle_torque_setpoint
+  #   type: px4_msgs::msg::VehicleTorqueSetpoint
 
   - topic: /fmu/out/vehicle_thrust_setpoint
     type: px4_msgs::msg::VehicleThrustSetpoint
@@ -75,7 +74,6 @@ publications:
   #   type: px4_msgs::msg::VehicleTrajectoryWaypoint
 
 subscriptions:
-
   - topic: /fmu/in/offboard_control_mode
     type: px4_msgs::msg::OffboardControlMode
 
@@ -87,6 +85,9 @@ subscriptions:
 
   - topic: /fmu/in/vehicle_visual_odometry
     type: px4_msgs::msg::VehicleOdometry
+
+  - topic: /fmu/in/tracking_info
+    type: px4_msgs::msg::TrackingInfo
   # - topic: /fmu/in/actuator_motors
   #   type: px4_msgs::msg::ActuatorMotors
 

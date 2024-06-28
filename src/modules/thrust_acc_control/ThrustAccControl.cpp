@@ -134,7 +134,7 @@ void ThrustAccControl::Run() {
     _vehicle_thrust_acc_setpoint_sub.update();
     _vacc_sub.update();
     _can_run_offboard = (_vehicle_control_mode.flag_control_offboard_enabled &&
-        _vehicle_control_mode.flag_control_rates_enabled);
+                         _vehicle_control_mode.flag_control_rates_enabled);
     if (_last_can_run && _can_run_offboard) {
       _last_run = _vehicle_thrust_acc_setpoint_sub.get().timestamp;
       _thrust_acc_sp = _vehicle_thrust_acc_setpoint_sub.get().thrust_acc_sp;

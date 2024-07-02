@@ -50,8 +50,11 @@
 #include <uORB/topics/vehicle_odometry.h>
 #include <uORB/topics/vehicle_rates_setpoint.h>
 #include <uORB/topics/vehicle_status.h>
+#include <uORB/topics/vehicle_thrust_acc_setpoint.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
 
+#include <AttitudeControl.hpp>
+#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 #include <lib/matrix/matrix/math.hpp>
 #include <lib/rate_control/rate_control.hpp>
 #include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
@@ -59,12 +62,6 @@
 #include <uORB/PublicationMulti.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/SubscriptionCallback.hpp>
-// #include <uORB/topics/vehicle_
-// #include <uORB/topics/vehithrus
-#include <uORB/topics/vehicle_thrust_acc_setpoint.h>
-
-#include <AttitudeControl.hpp>
-
 // #include <uORB/topics/vehilce_thrust_acc_setpoint.h>
 using namespace time_literals;
 
@@ -88,7 +85,7 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
 
  private:
   void Run() override;
-  void resetButterworthFilter();
+  void resetFilters();
   bool safeCheck();
   void safeAttitudeHolder();
   /**
@@ -151,10 +148,12 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
   bool _is_sim = false;
   bool _can_run_offboard = false;
   bool _last_can_run = false;
-
+  bool _safety_check = true;
+  //   uint64
   float _acc_limit;
   float _rate_limit;
-
+  AlphaFilter<float> _rate_sft_filter;
+  AlphaFilter<float> _acc_sft_filter;
   AttitudeControl _attitude_control;
 
   DEFINE_PARAMETERS(
@@ -169,6 +168,7 @@ class ThrustAccControl : public ModuleBase<ThrustAccControl>,
       (ParamFloat<px4::params::THR_P>)_param_thr_p,
       (ParamFloat<px4::params::THR_TMO_ACC>)_param_thr_timeout_acc,
       (ParamFloat<px4::params::GYROX_CUTOFF>)_param_imu_gyro_cutoff,
+      (ParamInt<px4::params::IMU_GYRO_RATEMAX>)_param_imu_gyro_rate_max,
       (ParamFloat<px4::params::THR_DELTA_BOUND>)_param_delta_thr_bound,
       (ParamFloat<px4::params::THR_LPF_CUTOFF>)_param_thr_lpf_cutoff_frq,
       (ParamFloat<px4::params::THR_BETA>)_param_beta,

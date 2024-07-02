@@ -132,20 +132,20 @@ PARAM_DEFINE_FLOAT(THR_TMO_ACC, 9.81f);
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(THR_SFT_ACC, 1.5f);
+PARAM_DEFINE_FLOAT(THR_SFT_ACC, 3.0f);
 
 /**
  * thrust contrl Max rate when mpc is running
  *
  * thrust contrl Max rate when mpc is running
  *
- * @min 0.5
- * @max 2.0
+ * @min 1.5
+ * @max 3.0
  * @decimal 3
  * @increment 0.01
  * @group Multicopter Rate Control
  */
-PARAM_DEFINE_FLOAT(THR_SFT_RATE, 1.5f);
+PARAM_DEFINE_FLOAT(THR_SFT_RATE, 2.5f);
 
 
 /**

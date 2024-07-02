@@ -58,16 +58,18 @@ bool ThrustAccControl::init() {
     PX4_ERR("callback registration failed");
     return false;
   }
-
+  resetFilters();
   return true;
 }
 
-void ThrustAccControl::resetButterworthFilter() {
+void ThrustAccControl::resetFilters() {
   // _lpf.initButterSysLowpass(0, 0, 10, 250);
   _thrust_sp_lpf.set_cutoff_frequency(_param_imu_gyro_cutoff.get(),
                                       _param_thr_lpf_cutoff_frq.get());
 
   _thrust_sp_lpf.reset(_u_prev);
+  _rate_sft_filter.setParameters(1 / _param_imu_gyro_rate_max.get(), 0.5f);
+  _acc_sft_filter.setParameters(1 / _param_imu_gyro_rate_max.get(), 0.5f);
 }
 
 void ThrustAccControl::parameters_updated() {
@@ -96,7 +98,7 @@ void ThrustAccControl::parameters_updated() {
       Vector3f(radians(_param_mc_rollrate_max.get()),
                radians(_param_mc_pitchrate_max.get()),
                radians(_param_mc_yawrate_max.get())));
-  resetButterworthFilter();
+  resetFilters();
 }
 
 float ThrustAccControl::get_u_inverse_model(float target_at) {
@@ -145,7 +147,9 @@ void ThrustAccControl::Run() {
         static uint64_t printer_counter_saft = 0;
         if (printer_counter_saft % 10 == 0) {
           printer_counter_saft++;
+          _safety_check = false;
           PX4_WARN("Safety Check Failed");
+          PX4_WARN("Auto hold in offboard mode");
         }
         safeAttitudeHolder();
       }
@@ -222,15 +226,29 @@ bool ThrustAccControl::safeCheck() {
   _vehicle_angular_velocity_sub.copy(&_vehicle_angular_velocity);
   matrix::Vector3f rates{_vehicle_angular_velocity.xyz};
 
-  if (rates.norm() > _rate_limit) {
-    return false;
-  }
   // TODO accleration is too high
   matrix::Vector3f acc{_vacc_sub.get().xyz[0], _vacc_sub.get().xyz[1],
                        _vacc_sub.get().xyz[2] + 9.81f};
-  if (acc.norm() > _acc_limit) {
+
+  if (!_safety_check) {
     return false;
   }
+
+  if (_acc_sft_filter.update(abs(acc(2))) > _acc_limit) {
+    PX4_WARN("Acc Limit Exceeded");
+    PX4_WARN("Acc Curr: %f", (double)(acc(2)));
+    PX4_WARN("Acc Filtered: %f", (double)(_acc_sft_filter.getState()));
+    _safety_check = false;
+    return false;
+  }
+  if (_rate_sft_filter.update(rates.norm()) > _rate_limit) {
+    PX4_WARN("Rate Limit Exceeded");
+    PX4_WARN("Rate Curr: %f", (double)(rates.norm()));
+    PX4_WARN("Rate Filtered: %f", (double)(_rate_sft_filter.getState()));
+    _safety_check = false;
+    return false;
+  }
+
   return true;
 }
 

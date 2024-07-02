@@ -177,7 +177,9 @@ param set-default -s MC_AT_EN 1
 # By default log from boot until first disarm.
 param set-default SDLOG_MODE 1
 # enable default, estimator replay and vision/avoidance logging profiles
-param set-default SDLOG_PROFILE 131
+#param set-default SDLOG_PROFILE 131
+param set-default SDLOG_PROFILE 17
+param set-default THR_P 0.004
 param set-default SDLOG_DIRS_MAX 7
 
 param set-default TRIG_INTERFACE 3

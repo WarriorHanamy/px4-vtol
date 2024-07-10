@@ -143,10 +143,9 @@ void ThrustAccControl::Run() {
       _rates_setpoint =
           matrix::Vector3f(_vehicle_thrust_acc_setpoint_sub.get().rates_sp);
       _thr_model_ff = _vehicle_thrust_acc_setpoint_sub.get().model_ff;
-      if (!safeCheck()) {
+      if ((_safety_check) && !safeCheck()) {
         _safety_check = false;
-        PX4_WARN("Safety Check Failed");
-        PX4_WARN("Auto hold in offboard mode");
+
         safeAttitudeHolder();
       }
       if ((_safety_check) && (_last_run > 0) &&

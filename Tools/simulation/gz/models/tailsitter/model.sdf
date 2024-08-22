@@ -49,7 +49,7 @@
 
       <!-- debug visuals for leg collisions -->
       <!-- <visual name="leg1_visual">
-        <pose>-0.26 -0.25 -0.16 0 0 0</pose>
+        <pose>-0.26 -0.25 -0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -63,7 +63,7 @@
         </material>
       </visual>
       <visual name="leg2_visual">
-        <pose>-0.26 0.25 0.16 0 0 0</pose>
+        <pose>-0.26 0.25 0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -77,7 +77,7 @@
         </material>
       </visual>
       <visual name="leg3_visual">
-        <pose>-0.26 0.25 -0.16 0 0 0</pose>
+        <pose>-0.26 0.25 -0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -91,7 +91,7 @@
         </material>
       </visual>
       <visual name="leg4_visual">
-        <pose>-0.26 -0.25 0.16 0 0 0</pose>
+        <pose>-0.26 -0.25 0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -107,7 +107,7 @@
 
       <collision
         name="leg1_collision">
-        <pose>-0.26 -0.25 -0.16 0 0 0</pose>
+        <pose>-0.26 -0.25 -0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -116,7 +116,7 @@
       </collision>
       <collision
         name="leg2_collision">
-        <pose>-0.26 0.25 0.16 0 0 0</pose>
+        <pose>-0.26 0.25 0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -125,7 +125,7 @@
       </collision>
       <collision
         name="leg3_collision">
-        <pose>-0.26 0.25 -0.16 0 0 0</pose>
+        <pose>-0.26 0.25 -0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -134,7 +134,7 @@
       </collision>
       <collision
         name="leg4_collision">
-        <pose>-0.26 -0.25 0.16 0 0 0</pose>
+        <pose>-0.26 -0.25 0.32 0 0 0</pose>
         <geometry>
           <sphere>
             <radius>0.01</radius>
@@ -404,8 +404,8 @@
       </visual>
     </link>
     <joint name='rotor_0_joint' type='revolute'>
-      <!-- <pose relative_to="base_link">-0.015 -0.25 -0.16 0.174532925 1.396263402 0</pose> -->
-      <pose relative_to="base_link">-0.015 -0.25 -0.16 0 1.5708 0</pose>
+      <!-- <pose relative_to="base_link">-0.015 -0.25 -0.32 0.174532925 1.396263402 0</pose> -->
+      <pose relative_to="base_link">-0.015 -0.25 -0.32 0 1.5708 0</pose>
       <child>rotor_0_link</child>
       <parent>base_link</parent>
       <axis>
@@ -521,7 +521,7 @@
       </visual>
     </link>
     <joint name='rotor_1_joint' type='revolute'>
-      <pose relative_to="base_link">-0.015 0.25 0.16 0 1.5708 0</pose>
+      <pose relative_to="base_link">-0.015 0.25 0.32 0 1.5708 0</pose>
       <child>rotor_1_link</child>
       <parent>base_link</parent>
       <axis>
@@ -637,7 +637,7 @@
       </visual>
     </link>
     <joint name='rotor_2_joint' type='revolute'>
-      <pose relative_to="base_link">-0.015 0.25 -0.16 0 1.5708 0</pose>
+      <pose relative_to="base_link">-0.015 0.25 -0.32 0 1.5708 0</pose>
       <child>rotor_2_link</child>
       <parent>base_link</parent>
       <axis>
@@ -753,7 +753,7 @@
       </visual>
     </link>
     <joint name='rotor_3_joint' type='revolute'>
-      <pose relative_to="base_link">-0.015 -0.25 0.16 0 1.5708 0</pose>
+      <pose relative_to="base_link">-0.015 -0.25 0.32 0 1.5708 0</pose>
       <child>rotor_3_link</child>
       <parent>base_link</parent>
       <axis>
@@ -775,9 +775,9 @@
       <turningDirection>ccw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
-      <maxRotVelocity>1000.0</maxRotVelocity>
+      <maxRotVelocity>2000.0</maxRotVelocity>
       <motorConstant>8.54858e-06</motorConstant>
-      <momentConstant>0.016</momentConstant>
+      <momentConstant>0.032</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>0</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
@@ -792,9 +792,9 @@
       <turningDirection>ccw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
-      <maxRotVelocity>1000.0</maxRotVelocity>
+      <maxRotVelocity>2000.0</maxRotVelocity>
       <motorConstant>8.54858e-06</motorConstant>
-      <momentConstant>0.016</momentConstant>
+      <momentConstant>0.032</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>1</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
@@ -809,9 +809,9 @@
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
-      <maxRotVelocity>1000.0</maxRotVelocity>
+      <maxRotVelocity>2000.0</maxRotVelocity>
       <motorConstant>8.54858e-06</motorConstant>
-      <momentConstant>0.016</momentConstant>
+      <momentConstant>0.032</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>2</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
@@ -826,9 +826,9 @@
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
-      <maxRotVelocity>1000.0</maxRotVelocity>
+      <maxRotVelocity>2000.0</maxRotVelocity>
       <motorConstant>8.54858e-06</motorConstant>
-      <momentConstant>0.016</momentConstant>
+      <momentConstant>0.032</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
       <motorNumber>3</motorNumber>
       <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
@@ -844,7 +844,7 @@
 <!-- LYU: temp remove aerodynamic -->
     <plugin filename="libAerodynamicsPlugin" name="gz::sim::systems::AerodynamicsPlugin">
       <link_name>base_link</link_name>
-      <area>0.1955</area>
+      <area>0.24</area>
       <air_density>1.2</air_density>
       <topic_force>zhang_force</topic_force>
       <topic_moment>zhang_moment</topic_moment>
@@ -996,7 +996,7 @@
 
 
 <!-- LYU：add lift drag for test  -->
-    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+    <!-- <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
       <a0>0.05984281113</a0>
       <cla>4.752798721</cla>
       <cda>0.6417112299</cda>
@@ -1067,7 +1067,7 @@
       filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>servo_2</joint_name>
       <sub_topic>servo_2</sub_topic>
-    </plugin>
+    </plugin> -->
 
   </model>
 </sdf>

@@ -52,6 +52,7 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
+#include <uORB/topics/vel_pitch_notification.h>
 
 #include <lib/matrix/matrix/math.hpp>
 #include <lib/rate_control/rate_control.hpp>
@@ -66,6 +67,9 @@
 #include <uORB/topics/mc_rate_ctrl_debug.h>
 #include <uORB/topics/vehicle_acceleration.h>
 #include <uORB/topics/vel_pitch_notification.h>
+
+#include <lib/mathlib/math/filter/LowPassFilter2p.hpp>
+
 using namespace time_literals;
 
 class MulticopterRateControl : public ModuleBase<MulticopterRateControl>,
@@ -115,8 +119,7 @@ class MulticopterRateControl : public ModuleBase<MulticopterRateControl>,
   uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
   uORB::Subscription _esc_status_sub{ORB_ID(esc_status)};
   uORB::Subscription _vehicle_acc_sub{ORB_ID(vehicle_acceleration)};
-  uORB::Subscription _vel_pitch_notification_sub{
-      ORB_ID(vel_pitch_notification)};
+
   uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update),
                                                    1_s};
 
@@ -151,16 +154,19 @@ class MulticopterRateControl : public ModuleBase<MulticopterRateControl>,
 
   float _pitch_torque_k;
   float _pitch_torque_bound;
+  math::LowPassFilter2p<float> _lp_filter_pitch_torque;
   // keep setpoint values between updates
   matrix::Vector3f _acro_rate_max; /**< max attitude rates in acro mode */
   matrix::Vector3f _rates_setpoint{};
   float _chirp_signal{0.0f};
   float _battery_status_scale{0.0f};
   matrix::Vector3f _thrust_setpoint{};
-
   float _energy_integration_time{0.0f};
   float _control_energy[4]{};
 
+  uORB::Publication<vel_pitch_notification_s> _vel_pitch_pub{
+      ORB_ID(vel_pitch_notification)};
+  vel_pitch_notification_s _vel_pitch_notification{};
   DEFINE_PARAMETERS(
       (ParamFloat<px4::params::MC_ROLLRATE_P>)_param_mc_rollrate_p,
       (ParamFloat<px4::params::MC_ROLLRATE_I>)_param_mc_rollrate_i,

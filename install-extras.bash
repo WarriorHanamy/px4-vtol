@@ -23,7 +23,7 @@ if [ -d "build" ]; then
 else
     cmake -Bbuild -S.
     cmake --build build
-    cmake --install build
+    sudo cmake --install build
 fi
 
 sudo ldconfig /usr/local/lib/

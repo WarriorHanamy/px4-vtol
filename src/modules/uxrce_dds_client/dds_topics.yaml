@@ -25,8 +25,8 @@ publications:
   # - topic: /fmu/out/hover_thrust_estimate
   #   type: px4_msgs::msg::HoverThrustEstimate
 
-  # - topic: /fmu/out/vehicle_acceleration
-  #   type: px4_msgs::msg::VehicleAcceleration
+  - topic: /fmu/out/vehicle_acceleration
+    type: px4_msgs::msg::VehicleAcceleration
   # - topic: /fmu/out/vehicle_attitude
   #   type: px4_msgs::msg::VehicleAttitude
 

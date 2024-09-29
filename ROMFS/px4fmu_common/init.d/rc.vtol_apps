@@ -47,3 +47,6 @@ land_detector start vtol
 
 thrust_acc_control start
 
+param set EKF2_EV_CTRL 8
+param set EKF2_MAG_TYPE 5
+

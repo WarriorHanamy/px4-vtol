@@ -9,7 +9,7 @@
     <link name="base_link">` <!-- \todo provide proper inertial : actual mass 1.75 kg -->
       <inertial>
         <pose>0 0 0 0 0 0</pose>
-        <mass>1.5</mass>
+        <mass>2.0</mass>
         <inertia>
           <ixx>0.043609000000000</ixx>
           <ixy>0</ixy>
@@ -994,80 +994,6 @@
       </physics>
     </joint>
 
-
-<!-- LYU：add lift drag for test  -->
-    <!-- <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
-      <a0>0.05984281113</a0>
-      <cla>4.752798721</cla>
-      <cda>0.6417112299</cda>
-      <cma>0.0</cma>
-      <alpha_stall>0.3391428111</alpha_stall>
-      <cla_stall>-3.85</cla_stall>
-      <cda_stall>-0.9233984055</cda_stall>
-      <cma_stall>0</cma_stall>
-      <cp>-0.05 0.3 0.05</cp>
-      <area>0.12</area>
-      <air_density>1.2041</air_density>
-      <forward>1 0 0</forward>
-      <upward>0 0 1</upward>
-      <link_name>base_link</link_name>
-      <control_joint_name>servo_0</control_joint_name>
-      <control_joint_rad_to_cl>-1.0</control_joint_rad_to_cl>
-    </plugin>
-    <plugin
-      filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
-      <joint_name>servo_0</joint_name>
-      <sub_topic>servo_0</sub_topic>
-    </plugin>
-
-    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
-      <a0>0.05984281113</a0>
-      <cla>4.752798721</cla>
-      <cda>0.6417112299</cda>
-      <cma>0.0</cma>
-      <alpha_stall>0.3391428111</alpha_stall>
-      <cla_stall>-3.85</cla_stall>
-      <cda_stall>-0.9233984055</cda_stall>
-      <cma_stall>0</cma_stall>
-      <cp>-0.05 -0.3 0.05</cp>
-      <area>0.12</area>
-      <air_density>1.2041</air_density>
-      <forward>1 0 0</forward>
-      <upward>0 0 1</upward>
-      <link_name>base_link</link_name>
-      <control_joint_name>servo_1</control_joint_name>
-      <control_joint_rad_to_cl>-1.0</control_joint_rad_to_cl>
-    </plugin>
-    <plugin
-      filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
-      <joint_name>servo_1</joint_name>
-      <sub_topic>servo_1</sub_topic>
-    </plugin>
-
-    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
-      <a0>-0.2</a0>
-      <cla>4.752798721</cla>
-      <cda>0.6417112299</cda>
-      <cma>0.0</cma>
-      <alpha_stall>0.3391428111</alpha_stall>
-      <cla_stall>-3.85</cla_stall>
-      <cda_stall>-0.9233984055</cda_stall>
-      <cma_stall>0</cma_stall>
-      <cp>-0.5 0 0</cp>
-      <area>0.01</area>
-      <air_density>1.2041</air_density>
-      <forward>1 0 0</forward>
-      <upward>0 0 1</upward>
-      <link_name>base_link</link_name>
-      <control_joint_name>servo_2</control_joint_name>
-          <control_joint_name>servo_2</control_joint_name>
-      <control_joint_rad_to_cl>-10.0</control_joint_rad_to_cl>
-    </plugin>
-    <plugin
-      filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
-      <joint_name>servo_2</joint_name>
-      <sub_topic>servo_2</sub_topic>
-    </plugin> -->
 
   </model>
 </sdf>

@@ -850,7 +850,65 @@
       <topic_moment>zhang_moment</topic_moment>
       <if_omit_moment>false</if_omit_moment>
       <if_omit_force>false</if_omit_force>
+      <!-- aero_id: specifies which aerodynamics model to use -->
+      <!-- 0 for PHI aerodynamics -->
+      <!-- 1 for BSPLINE aerodynamics -->
+      <!-- 2 for LYU aerodynamics (not implemented) -->
+      <!-- 3 for Adavanced Lift Drag plugin -->
+      <aero_id>3</aero_id>
     </plugin>
+
+
+    <!-- <plugin filename="gz-sim-advanced-lift-drag-system" name="gz::sim::systems::AdvancedLiftDrag">
+      <a0>0.0</a0>
+      <AR>8.5</AR>
+      <eff>0.97</eff>
+      <CL0>0.15188</CL0>
+      <CLa>5.015</CLa>
+      <CLb>-0.01</CLb>
+      <CLa_stall>-3.85</CLa_stall>
+      <CLp>0.0</CLp>
+      <CLq>0</CLq>
+      <CLr>0.0</CLr>
+      <cda>1.5</cda>
+      <CD0>0.15</CD0>
+      <CDp>0.0</CDp>
+      <CDq>0.0</CDq>
+      <CDr>0.0</CDr>
+      <CDa_stall>-0.9233984055</CDa_stall>
+
+      <CYb>-0.258244</CYb>
+      <CYp>0.0</CYp>
+      <CYq>0.0</CYq>
+      <CYr>0.0</CYr>
+
+      <Cem0>0.0</Cem0>
+      <Cema>0.0</Cema>
+      <Cellb>0.0</Cellb>
+      <Cenb>0.0</Cenb>
+      <Cellp>-0.0</Cellp>
+      <Cemp>0.0</Cemp>
+      <Cenp>0.0</Cenp>
+      <Cellq>0.0</Cellq>
+      <Cemq>0.0</Cemq>
+      <Cenq>0.0</Cenq>
+      <Cellr>0.0</Cellr>
+      <Cemr>0.0</Cemr>
+      <Cenr>0.0</Cenr>
+      <alpha_stall>0.03</alpha_stall>
+      <Cema_stall>0</Cema_stall>
+      <ref_pt>-0.12 0.0 0.0</ref_pt>
+      <area>1.0</area>
+      <mac>0.22</mac>
+      <air_density>1.168</air_density>
+      <forward>1 0 0</forward>
+      <upward>0 0 1</upward>
+      <link_name>base_link</link_name>
+      <num_ctrl_surfaces>0</num_ctrl_surfaces>
+    </plugin> -->
+      </model>
+</sdf>
+
 
 <!-- LYU: add control face -->
     <link name="left_elevon">
@@ -995,5 +1053,3 @@
     </joint>
 
 
-  </model>
-</sdf>

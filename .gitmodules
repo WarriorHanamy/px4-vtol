@@ -50,8 +50,8 @@
 	branch = px4
 [submodule "msg"]
 	path = msg
-	url = git@github.com:SYSU-HILAB/VTOL-px4-msgs.git
-	branch = offboard
+	url = https://github.com/WarriorHanamy/vtol-px4-msgs.git
+	branch = main
 [submodule "dds-agent"]
 	path = dds-agent
 	url = https://github.com/eProsima/Micro-XRCE-DDS-Agent.git

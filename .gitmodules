@@ -52,9 +52,6 @@
 	path = msg
 	url = git@github.com:SYSU-HILAB/VTOL-px4-msgs.git
 	branch = offboard
-[submodule "aero_dynamcis_plugin"]
-	path = aero_dynamcis_plugin
-	url = git@github.com:SYSU-HILAB/VTOL-gz-simulation.git
 [submodule "dds-agent"]
 	path = dds-agent
 	url = https://github.com/eProsima/Micro-XRCE-DDS-Agent.git

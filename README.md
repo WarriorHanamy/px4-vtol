@@ -1,10 +1,23 @@
 # Installation
 ```shell
-git clone --recursive https://github.com/WarriorHanamy/px4-vtol.git
-bash Tools/setup/ubuntu.sh
+git clone --recursive https://github.com/WarriorHanamy/px4-vtol.git -b docker --depth=1
 ```
 
-# Test Installation
+## build simulator container image
 ```shell
-make px4_sitl gz_tailsitter
+just build-px4
+```
+
+
+
+# Test Installation
+
+## Run in container
+```shell
+just run-px4
+```
+
+In container bash 
+```shell
+runpx4 2
 ```

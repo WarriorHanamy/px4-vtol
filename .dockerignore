@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+venv/
+
+# Editor/OS temporary files and metadata
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Build artifacts
+dist/
+build/
+*.log
+*.tmp
+tmp/
+
+# Dependencies (if installed locally and not needed for the build stage)
+# If using a multi-stage build or installing dependencies inside the container,
+# you may want to uncomment the following line to save context size.
+# node_modules/
+
+# Docker specific files (always ignore the ignore file itself and the Dockerfile)
+.dockerignore
+Dockerfile
+docker-compose.yml

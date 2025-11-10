@@ -17,7 +17,7 @@ if [ -d "build" ]; then
 else
     cmake -Bbuild -S.
     cmake --build build -j "$NUM_CORES"
-    sudo cmake --install build
+    cmake --install build
 fi
 
-sudo ldconfig /usr/local/lib/
+ldconfig /usr/local/lib/
